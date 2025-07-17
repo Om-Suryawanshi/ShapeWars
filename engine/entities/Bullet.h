@@ -19,4 +19,6 @@ public:
 	void update() override;
 	void draw(sf::RenderWindow& window) override;
 	vec2 getPos() const;
+	//bool colide(vec2& pos);
+	void die();
 };

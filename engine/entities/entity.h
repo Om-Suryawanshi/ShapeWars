@@ -23,9 +23,9 @@ protected:
 
 public:
 	entity();
-	explicit entity(int id, float speed, float size, float sides) : id(id), speed(speed), size(size), sides(static_cast<int>(sides)) {}
+	explicit entity(int id, float speed, float size, float sides) : id(id), speed(speed), size(size), sides(static_cast<int>(sides)) {} // Used for player
 	
-	explicit entity(int id, float speed, float size, float sides, vec2& pos) : id(id), speed(speed), size(size), sides(static_cast<int>(sides)), pos(pos) {}
+	explicit entity(int id, float speed, float size, float sides, vec2& pos) : id(id), speed(speed), size(size), sides(static_cast<int>(sides)), pos(pos) {} // Used for bullet
 
 	virtual ~entity() = default;
 

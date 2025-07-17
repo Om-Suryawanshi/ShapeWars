@@ -26,7 +26,7 @@ void Bullet::update()
 
 	if (age >= lifetime)
 	{
-		isAlive = false;
+		die();
 	}
 
 	sf::Uint8 alpha = static_cast<sf::Uint8>(255 * (1.0f - (age / lifetime)));
@@ -45,4 +45,9 @@ void Bullet::draw(sf::RenderWindow& window)
 vec2 Bullet::getPos() const
 {
 	return pos;
+}
+
+void Bullet::die()
+{
+	isAlive = false;
 }

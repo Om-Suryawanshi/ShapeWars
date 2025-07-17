@@ -16,6 +16,7 @@ void GameManager::init()
 	g_window.setVerticalSyncEnabled(true);
 
 	entManager.createEntity<Player>();
+	entManager.createEntity<Enemy>();
 
 	g_ImguiStyle = ImGui::GetStyle();
 }
@@ -86,7 +87,6 @@ void GameManager::update()
 			ImGui::SameLine();
 			if (ImGui::Button("D"))
 			{
-				entManager.markForRemoval(id);
 				ent->die();
 			}
 
