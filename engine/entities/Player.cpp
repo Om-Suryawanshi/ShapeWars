@@ -46,3 +46,7 @@ vec2 Player::getPos() const
 	return pos;
 }
 
+void Player::die()
+{
+	isAlive = false;
+}

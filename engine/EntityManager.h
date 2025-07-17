@@ -4,6 +4,7 @@
 
 
 #include "entities/entity.h"
+#include "entities/Bullet.h"
 
 #include "SFML/Graphics.hpp"
 
