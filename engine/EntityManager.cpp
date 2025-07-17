@@ -43,7 +43,16 @@ void EntityManager::draw(sf::RenderWindow& window)
 	}
 }
 
-
+int EntityManager::countByType(EntityType type)
+{
+	int count = 0;
+	for (auto& [id, e] : entities)
+	{
+		if (e->getisAlive() && e->getType() == type)
+			++count;
+	}
+	return count;
+}
 
 std::shared_ptr<entity> EntityManager::getEnt(int id)
 {

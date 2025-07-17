@@ -1,22 +1,35 @@
 #include "GameManager.h"
 
+Config g_Config;
 
 GameManager::GameManager()
 	:g_running(true)
 {
-	init();
+	if (g_Config.readConfig("CONFIG.txt"))
+	{
+		init();
+	}
 }
 
 void GameManager::init()
 {
-	g_window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "ShapeWars");
+	g_window.create(sf::VideoMode(g_Config.game.window.width, g_Config.game.window.height), "ShapeWars");
 	ImGui::SFML::Init(g_window);
 
-	g_window.setFramerateLimit(FPS);
+	g_window.setFramerateLimit(g_Config.game.window.frameLimit);
 	g_window.setVerticalSyncEnabled(true);
+	// Full Screen Implementation
 
 	entManager.createEntity<Player>();
-	entManager.createEntity<Enemy>();
+	//entManager.createEntity<Enemy>();
+
+	// Enemy Spawner
+
+	randomSpeed = g_Config.game.enemy.minSpeed + static_cast<float>(rand()) / RAND_MAX * (g_Config.game.enemy.maxSpeed - g_Config.game.enemy.minSpeed);
+	randomSides = g_Config.game.enemy.minVertices + (rand() % (g_Config.game.enemy.maxVertices - g_Config.game.enemy.minVertices + 1));
+
+	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / g_Config.game.window.frameLimit);
+
 
 	g_ImguiStyle = ImGui::GetStyle();
 }
@@ -55,6 +68,31 @@ void GameManager::update()
 				}
 			}
 		}
+	}
+
+
+	// Enemy Spawn Logic
+	maxEnemies = 10;
+	if (enemySpawnClock.getElapsedTime().asMilliseconds() >= enemySpawnIntervalMs)
+	{
+		// Spawn new enemy using random parameters from config
+		currentEnemies = entManager.countByType(EntityType::Enemy);
+		if (currentEnemies < maxEnemies)
+		{
+			float randomSpeed = g_Config.game.enemy.minSpeed +
+				static_cast<float>(rand()) / RAND_MAX *
+				(g_Config.game.enemy.maxSpeed - g_Config.game.enemy.minSpeed);
+
+			int randomSides = g_Config.game.enemy.minVertices +
+				(rand() % (g_Config.game.enemy.maxVertices - g_Config.game.enemy.minVertices + 1));
+
+			float radius = static_cast<float>(g_Config.game.enemy.shapeRadius);
+
+			entManager.createEntity<Enemy>(randomSpeed, radius, static_cast<float>(randomSides));
+		}
+
+		// Restart spawn timer
+		enemySpawnClock.restart();
 	}
 
 

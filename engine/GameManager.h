@@ -8,7 +8,7 @@
 #include <iostream>
 
 //#include "Player.h"
-#include "config/config.h"
+#include "config/config.hpp"
 #include "EntityManager.h"
 #include "entities/player.h"
 #include "entities/Enemy.h"
@@ -21,6 +21,12 @@ protected:
 	ImGuiStyle g_ImguiStyle;
 	bool g_running;
 	sf::Event g_event;
+	float randomSpeed;
+	float randomSides;
+	sf::Clock enemySpawnClock;
+	int enemySpawnIntervalMs;
+	int currentEnemies;
+	int maxEnemies;
 
 	EntityManager entManager;
 

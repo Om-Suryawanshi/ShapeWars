@@ -1,7 +1,7 @@
 #pragma once
 #include "SFML//Graphics.hpp"
 #include "../engine/config/vec2.h"
-#include "../engine/config/config.h"
+#include "../engine/config/config.hpp"
 #include "entity.h"
 
 class Player : public entity

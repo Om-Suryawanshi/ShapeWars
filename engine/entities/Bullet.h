@@ -1,7 +1,7 @@
 #pragma once
 #include "entity.h"
 #include <math.h>
-#include "../engine/config/config.h"
+#include "../engine/config/config.hpp" //FPS
 
 
 class Bullet : public entity
