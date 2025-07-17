@@ -27,7 +27,8 @@ protected:
 	int enemySpawnIntervalMs;
 	int currentEnemies;
 	int maxEnemies;
-
+	bool m_isPaused = false;
+	Collision collision;
 	EntityManager entManager;
 
 	void update(); // Main Game method called every frame

@@ -25,8 +25,8 @@ void GameManager::init()
 
 	// Enemy Spawner
 
-	randomSpeed = g_Config.game.enemy.minSpeed + static_cast<float>(rand()) / RAND_MAX * (g_Config.game.enemy.maxSpeed - g_Config.game.enemy.minSpeed);
-	randomSides = g_Config.game.enemy.minVertices + (rand() % (g_Config.game.enemy.maxVertices - g_Config.game.enemy.minVertices + 1));
+	randomSpeed = static_cast<float> (g_Config.game.enemy.minSpeed) + static_cast<float>(rand()) / RAND_MAX * (static_cast<float> (g_Config.game.enemy.maxSpeed) - static_cast<float> (g_Config.game.enemy.minSpeed));
+	randomSides = static_cast<float> (g_Config.game.enemy.minVertices) + (rand() % (static_cast<int>(g_Config.game.enemy.maxVertices) - static_cast<int>(g_Config.game.enemy.minVertices + 1)));
 
 	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / g_Config.game.window.frameLimit);
 
@@ -50,10 +50,11 @@ void GameManager::update()
 			{
 				g_window.close();
 			}
+			
 
 			//Bullet fire logic
 			if (g_event.type == sf::Event::MouseButtonPressed &&
-				g_event.mouseButton.button == sf::Mouse::Left)
+				g_event.mouseButton.button == sf::Mouse::Left && !m_isPaused)
 			{
 				sf::Vector2i mousePixel = sf::Mouse::getPosition(g_window);
 				sf::Vector2f mouseWorld = g_window.mapPixelToCoords(mousePixel);
@@ -67,13 +68,20 @@ void GameManager::update()
 					entManager.createEntity<Bullet>(playerPos, direction);
 				}
 			}
+
+			// Pause with P
+			if (g_event.type == sf::Event::KeyPressed && g_event.key.code == sf::Keyboard::P)
+			{
+				m_isPaused = !m_isPaused;
+				entManager.pauseEnt();
+			}
 		}
 	}
 
 
 	// Enemy Spawn Logic
 	maxEnemies = 10;
-	if (enemySpawnClock.getElapsedTime().asMilliseconds() >= enemySpawnIntervalMs)
+	if (enemySpawnClock.getElapsedTime().asMilliseconds() >= enemySpawnIntervalMs && !m_isPaused)
 	{
 		// Spawn new enemy using random parameters from config
 		currentEnemies = entManager.countByType(EntityType::Enemy);
@@ -93,6 +101,32 @@ void GameManager::update()
 
 		// Restart spawn timer
 		enemySpawnClock.restart();
+	}
+
+	//Collision Code between player and enemy
+	for (auto& enemy : entManager.getByType(EntityType::Enemy))
+	{
+		if (!enemy->getisAlive()) continue;
+		if (collision.checkCollision(*entManager.getEnt(0), *enemy)) 
+		{
+			enemy->die();
+		}
+	}
+
+	// Collision logic between bullet and enemy
+	for (auto& bullet : entManager.getByType(EntityType::Bullet))
+	{
+		if (!bullet->getisAlive()) continue;
+		for (auto& enemy : entManager.getByType(EntityType::Enemy))
+		{
+			if (!enemy->getisAlive()) continue;
+			if (collision.checkCollision(*bullet, *enemy))
+			{
+				bullet->die();
+				enemy->die();
+				break;
+			}
+		}
 	}
 
 

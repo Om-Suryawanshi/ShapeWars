@@ -3,7 +3,7 @@
 
 Enemy::Enemy(int id, float speed, float size, float sides)
 	: entity(id,speed,size,sides)
-	, enemy(size, sides)
+	, enemy(size, static_cast<size_t>(sides))
 {
 	type = EntityType::Enemy;
 	isAlive = true;
@@ -32,22 +32,33 @@ Enemy::Enemy(int id, float speed, float size, float sides)
 
 void Enemy::update()
 {
-	//Age
-	age += 10.0f / g_Config.game.window.frameLimit;
-	if (age >= lifetime)
+	if (!paused)
 	{
-		die();
-	}
-	sf::Uint8 alpha = static_cast<sf::Uint8>(255 * (1.0f - (age / lifetime)));
-	sf::Color currentOutlineColor = enemy.getOutlineColor();
-	currentOutlineColor.a = alpha;
-	enemy.setOutlineColor(currentOutlineColor);
+		//Age
+		age += 10.0f / g_Config.game.window.frameLimit;
+		if (age >= lifetime)
+		{
+			die();
+		}
+		sf::Uint8 alpha = static_cast<sf::Uint8>(255 * (1.0f - (age / lifetime)));
+		sf::Color currentOutlineColor = enemy.getOutlineColor();
+		currentOutlineColor.a = alpha;
+		enemy.setOutlineColor(currentOutlineColor);
 
-	// Enemy Movement Logic
-	pos += velocity;
-	if (pos.x < size || pos.x > g_Config.game.window.width - size) velocity.x *= -1;
-	if (pos.y < size || pos.y > g_Config.game.window.height - size) velocity.y *= -1;
-	enemy.setPosition(pos.x, pos.y);
+		// Enemy Movement Logic
+		pos += velocity;
+		if (pos.x < size || pos.x > g_Config.game.window.width - size) velocity.x *= -1;
+		if (pos.y < size || pos.y > g_Config.game.window.height - size) velocity.y *= -1;
+		enemy.setPosition(pos.x, pos.y);
+	}
+
+	// Spin
+	rotate();
+}
+
+void Enemy::rotate()
+{
+	enemy.rotate(1.0f);
 }
 
 

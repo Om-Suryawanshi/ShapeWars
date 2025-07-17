@@ -14,4 +14,5 @@ public:
 	void draw(sf::RenderWindow& window);
 	vec2 getPos() const;
 	void die();
+	void respawn();
 };

@@ -157,6 +157,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="engine\Collision.cpp" />
     <ClCompile Include="engine\entities\Bullet.cpp" />
     <ClCompile Include="engine\entities\Enemy.cpp" />
     <ClCompile Include="engine\GameManager.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="engine\entities\Player.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\Collision.h" />
     <ClInclude Include="engine\config\config.hpp" />
     <ClInclude Include="engine\entities\Bullet.h" />
     <ClInclude Include="engine\entities\Enemy.h" />

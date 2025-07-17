@@ -35,6 +35,14 @@ void EntityManager::update()
 	destroyEnt();
 }
 
+void EntityManager::pauseEnt()
+{
+	for (auto& [id, ent] : entities)
+	{
+		ent->pause();
+	}
+}
+
 void EntityManager::draw(sf::RenderWindow& window)
 {
 	for (auto& [id, ent] : entities)
@@ -60,6 +68,18 @@ std::shared_ptr<entity> EntityManager::getEnt(int id)
 	return ent != entities.end() ? ent->second : nullptr;
 }
 
+std::vector<entity*> EntityManager::getByType(EntityType type)
+{
+	std::vector<entity*> entityList;
+	for (auto& [id, ent] : entities)
+	{
+		if (ent->getType() == type)
+		{
+			entityList.push_back(ent.get());
+		}
+	}
+	return entityList;
+}
 
 const std::unordered_map<int, std::shared_ptr<entity>>& EntityManager::getAllEnt() const
 {

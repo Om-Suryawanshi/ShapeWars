@@ -24,22 +24,25 @@ Bullet::Bullet(int id, vec2& startPos, vec2& direction)
 
 void Bullet::update()
 {
-	pos += velocity;
-	age += 50.0f / g_Config.game.window.frameLimit; // Randomly Trial and error value 50.0f for ageing lower it to decrease ageing
-
-	if (age >= lifetime)
+	if (!paused)
 	{
-		die();
-	}
+		pos += velocity;
+		age += 50.0f / g_Config.game.window.frameLimit; // Randomly Trial and error value 50.0f for ageing lower it to decrease ageing
 
-	sf::Uint8 alpha = static_cast<sf::Uint8>(255 * (1.0f - (age / lifetime)));
-	sf::Color currentColor = bullet.getFillColor();
-	sf::Color currentOutlineColor = bullet.getOutlineColor();
-	currentColor.a = alpha; // 'a' is the alpha component
-	currentOutlineColor.a = alpha;
-	bullet.setFillColor(currentColor);
-	bullet.setOutlineColor(currentOutlineColor);
-	bullet.setPosition(pos.x, pos.y);
+		if (age >= lifetime)
+		{
+			die();
+		}
+
+		sf::Uint8 alpha = static_cast<sf::Uint8>(255 * (1.0f - (age / lifetime)));
+		sf::Color currentColor = bullet.getFillColor();
+		sf::Color currentOutlineColor = bullet.getOutlineColor();
+		currentColor.a = alpha; // 'a' is the alpha component
+		currentOutlineColor.a = alpha;
+		bullet.setFillColor(currentColor);
+		bullet.setOutlineColor(currentOutlineColor);
+		bullet.setPosition(pos.x, pos.y);
+	}
 }
 
 void Bullet::draw(sf::RenderWindow& window)

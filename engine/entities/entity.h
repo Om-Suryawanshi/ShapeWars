@@ -1,6 +1,7 @@
 #pragma once
 #include "SFML/Graphics.hpp"
 #include "../engine/config/vec2.h"
+#include "../engine/config/config.hpp"
 
 enum class EntityType 
 {
@@ -19,6 +20,7 @@ protected:
 	float speed;
 	float size; // Radius
 	int sides;
+	bool paused = false;
 	EntityType type = EntityType::None;
 
 public:
@@ -36,5 +38,7 @@ public:
 	vec2 getPos() const;
 	void die();
 	bool getisAlive() const;
+	void pause();
+	float getCollisionRadius() const;
 };
 
