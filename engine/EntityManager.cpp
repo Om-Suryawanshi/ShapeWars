@@ -68,6 +68,26 @@ std::shared_ptr<entity> EntityManager::getEnt(int id)
 	return ent != entities.end() ? ent->second : nullptr;
 }
 
+std::shared_ptr<entity> EntityManager::getPlayer()
+{
+	for (auto& [id, ent] : entities)
+	{
+		if (ent->getType() == EntityType::Player)
+		{
+			return ent;
+		}
+	}
+}
+
+bool EntityManager::playerExists()
+{
+	for (auto& ent : getByType(EntityType::Player))
+	{
+		if (ent && ent->getisAlive()) return true;
+	}
+	return false;
+}
+
 std::vector<entity*> EntityManager::getByType(EntityType type)
 {
 	std::vector<entity*> entityList;

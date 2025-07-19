@@ -8,8 +8,6 @@ class Bullet : public entity
 {
 private:
 	vec2 velocity;
-	float lifetime;
-	float age;
 	vec2 direction;
 
 public:

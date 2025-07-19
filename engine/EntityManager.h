@@ -36,7 +36,8 @@ public:
 	void draw(sf::RenderWindow& window);
 	void pauseEnt();
 	int countByType(EntityType type);
-
+	bool playerExists();
+	std::shared_ptr<entity> getPlayer();
 	std::vector<entity*> getByType(EntityType type);
 };
 

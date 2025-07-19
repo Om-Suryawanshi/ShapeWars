@@ -1,14 +1,15 @@
 #include "Enemy.h"
 
 
-Enemy::Enemy(int id, float speed, float size, float sides)
+Enemy::Enemy(int id, float speed, float size, float sides, EntityType enemyType)
 	: entity(id,speed,size,sides)
-	, enemy(size, static_cast<size_t>(sides))
+	, enemy(size, static_cast<size_t>(sides))	
 {
-	type = EntityType::Enemy;
 	isAlive = true;
+	type = enemyType;
 	age = 0;
 	angle = static_cast<float>((rand() % 360) * PI / 180.0f); // degrees to radians
+
 	velocity.x = std::cos(angle) * speed;
 	velocity.y = std::sin(angle) * speed;
 
@@ -24,9 +25,12 @@ Enemy::Enemy(int id, float speed, float size, float sides)
 	enemy.setOutlineThickness(static_cast<float>(g_Config.game.enemy.outlineThickness));
 
 	// random spawn logic
-	float spawnX = size + static_cast<float>(rand() % static_cast<int>(g_Config.game.window.width - 2 * size));
-	float spawnY = size + static_cast<float>(rand() % static_cast<int>(g_Config.game.window.height - 2 * size));
-	pos = vec2(spawnX, spawnY);
+	if (type == EntityType::Enemy)
+	{
+		float spawnX = size + static_cast<float>(rand() % static_cast<int>(g_Config.game.window.width - 2 * size));
+		float spawnY = size + static_cast<float>(rand() % static_cast<int>(g_Config.game.window.height - 2 * size));
+		pos = vec2(spawnX, spawnY);
+	}	
 	enemy.setPosition(pos.x, pos.y);
 }
 
@@ -52,7 +56,6 @@ void Enemy::update()
 		enemy.setPosition(pos.x, pos.y);
 	}
 
-	// Spin
 	rotate();
 }
 
@@ -60,7 +63,6 @@ void Enemy::rotate()
 {
 	enemy.rotate(1.0f);
 }
-
 
 void Enemy::draw(sf::RenderWindow& window)
 {
@@ -76,3 +78,4 @@ vec2 Enemy::getPos() const
 {
 	return pos;
 }
+

@@ -6,6 +6,9 @@
 
 class Player : public entity
 {
+protected:
+	bool justRespawned = false;
+
 public:
 	sf::CircleShape player;
 
@@ -14,5 +17,4 @@ public:
 	void draw(sf::RenderWindow& window);
 	vec2 getPos() const;
 	void die();
-	void respawn();
 };

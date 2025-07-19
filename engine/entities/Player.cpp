@@ -23,6 +23,11 @@ void Player::update()
 {
 	if (!paused)
 	{
+		if (justRespawned)
+		{
+			justRespawned = false;
+			return;
+		}
 		// Movement
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) pos.y -= speed;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) pos.y += speed;
@@ -37,13 +42,6 @@ void Player::update()
 
 		player.setPosition(pos.x, pos.y);
 	}
-}
-
-void Player::respawn()
-{
-	pos.x = static_cast<float>(g_Config.game.window.width) / 2;
-	pos.y = static_cast<float>(g_Config.game.window.height) / 2;
-	player.setPosition(pos.x, pos.y);
 }
 
 void Player::draw(sf::RenderWindow& window)

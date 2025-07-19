@@ -8,7 +8,8 @@ enum class EntityType
 	None,
 	Player,
 	Enemy,
-	Bullet
+	Bullet,
+	MiniEnemy
 };
 
 class entity
@@ -16,6 +17,8 @@ class entity
 protected:
 	bool isAlive;
 	int id;
+	float lifetime;
+	float age;
 	vec2 pos;
 	float speed;
 	float size; // Radius
@@ -40,5 +43,11 @@ public:
 	bool getisAlive() const;
 	void pause();
 	float getCollisionRadius() const;
+	int getVertices() const;
+	int getSpeed() const;
+	int getSize() const;
+	void setType(EntityType type);
+	void setPos(vec2 pos);
+	void setLifetime(int life);
 };
 

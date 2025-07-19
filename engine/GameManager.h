@@ -31,6 +31,13 @@ protected:
 	Collision collision;
 	EntityManager entManager;
 
+	// Score
+	int m_score = 0;
+	int m_highScore = 0;
+	int m_respawnPenalty = 500;
+	sf::Text m_scoreText;
+	sf::Font m_font;
+
 	void update(); // Main Game method called every frame
 
 
@@ -44,4 +51,5 @@ public:
 	unsigned int height() const;
 	sf::RenderWindow& getWindow();
 	bool isRunning();
+	void updateScoreText();
 };
