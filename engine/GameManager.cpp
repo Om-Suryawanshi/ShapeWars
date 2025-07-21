@@ -236,7 +236,7 @@ void GameManager::update()
 					std::shared_ptr<entity> minienemy_base = entManager.createEntity<Enemy>(
 						enemy->getSpeed(),
 						enemy->getSize() / 2,
-						enemy->getVertices(),
+						static_cast<float>(enemy->getVertices()),
 						EntityType::MiniEnemy
 					);
 

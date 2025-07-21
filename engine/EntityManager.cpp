@@ -77,6 +77,7 @@ std::shared_ptr<entity> EntityManager::getPlayer()
 			return ent;
 		}
 	}
+	return nullptr;
 }
 
 bool EntityManager::playerExists()

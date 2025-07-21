@@ -3,7 +3,7 @@
 
 Enemy::Enemy(int id, float speed, float size, float sides, EntityType enemyType)
 	: entity(id,speed,size,sides)
-	, enemy(size, static_cast<float>(sides))	
+	, enemy(size, static_cast<size_t>(sides))	
 {
 	isAlive = true;
 	type = enemyType;
