@@ -38,7 +38,7 @@ See [GameSpecifications.md](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad
 ### Prerequisites
 
 - Windows (recommended): Visual Studio 2022/2019 with MSVC toolchain
-- SFML runtime DLLs are bundled in `dlls/`
+- SFML runtime DLLs are bundled in `deps/bin/`
 - ImGui + ImGui-SFML sources are included under `external/imgui`
 - Font asset at `assets/fonts/MOELA.ttf`
 
@@ -57,10 +57,11 @@ See [GameSpecifications.md](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad
 ### Run
 
 - Ensure the following are available next to the built executable (or on `PATH`):
-  - Contents of `dlls/` (SFML and OpenAL DLLs)
+  - Contents of `deps/bin/*` (SFML and OpenAL DLLs)
   - `config.txt`
-  - `fonts/` directory (for the configured font)
-- Launch the built executable. The game reads settings from `config.txt`.
+  - `assets/fonts/` directory (for the configured font)
+- Launch the built executable.
+
 
 ## Configuration
 
@@ -90,7 +91,6 @@ Adjust values to tune gameplay without recompiling.
   - [EntityManager.h](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/EntityManager.h), [EntityManager.cpp](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/EntityManager.cpp) — entity lifecycle and tagging
   - [Collision.h](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/Collision.h), [Collision.cpp](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/Collision.cpp) — collision utilities
   - [RewindSystem.h](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/RewindSystem.h), [RewindSystem.cpp](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/RewindSystem.cpp) — time/state rewind functionality
-- external/ — ImGui + ImGui-SFML sources, headers for external libraries
 - [config.txt](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad55b3b71a0929d8835c6e9fe8ec7adec277bd1/config.txt) — gameplay configuration
 - [GameSpecifications.md](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad55b3b71a0929d8835c6e9fe8ec7adec277bd1/GameSpecifications.md) — detailed game requirements
 - [LICENSE](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/LICENSE) — MIT License
