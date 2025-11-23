@@ -6,7 +6,7 @@ Arcade-style 2D shooter built with C++ and SFML, featuring ImGui-powered debuggi
 - License: MIT
 
 ## Demo
-![Gameplay demo](media/game.gif)
+![Gameplay demo](assets/media/game.gif)
 
 ## Features
 
