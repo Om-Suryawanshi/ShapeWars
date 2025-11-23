@@ -40,6 +40,7 @@ void Player::update()
 		if (pos.y > g_Config.game.window.height - size) pos.y = g_Config.game.window.height - size;
 
 		player.setPosition(pos.x, pos.y);
+		rotate();
 	}
 }
 
@@ -56,4 +57,9 @@ vec2 Player::getPos() const
 void Player::die()
 {
 	isAlive = false;
+}
+
+void Player::rotate()
+{
+	player.rotate(2.0f);
 }

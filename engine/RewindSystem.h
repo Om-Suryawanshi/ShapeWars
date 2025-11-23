@@ -7,7 +7,8 @@
 
 #include "../engine/config/config.hpp"
 #include <deque>
-
+#include <iostream>
+#include <SFML/Graphics.hpp>
 
 struct SnapshotEntityData {
 	EntityType type;
