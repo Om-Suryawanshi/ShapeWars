@@ -90,12 +90,7 @@ Adjust values to tune gameplay without recompiling.
   - [EntityManager.h](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/EntityManager.h), [EntityManager.cpp](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/EntityManager.cpp) — entity lifecycle and tagging
   - [Collision.h](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/Collision.h), [Collision.cpp](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/Collision.cpp) — collision utilities
   - [RewindSystem.h](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/RewindSystem.h), [RewindSystem.cpp](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/engine/RewindSystem.cpp) — time/state rewind functionality
-- imgui/ — ImGui + ImGui-SFML sources
-- libraries/
-  - include/ — headers for external libraries
-  - lib/ — library binaries (if provided)
-- dlls/ — SFML and OpenAL DLLs for runtime
-- fonts/ — font assets
+- external/ — ImGui + ImGui-SFML sources, headers for external libraries
 - [config.txt](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad55b3b71a0929d8835c6e9fe8ec7adec277bd1/config.txt) — gameplay configuration
 - [GameSpecifications.md](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad55b3b71a0929d8835c6e9fe8ec7adec277bd1/GameSpecifications.md) — detailed game requirements
 - [LICENSE](https://github.com/Om-Suryawanshi/ShapeWars/blob/master/LICENSE) — MIT License
@@ -103,7 +98,7 @@ Adjust values to tune gameplay without recompiling.
 
 ## Troubleshooting
 
-- Missing DLLs: Copy contents of `dlls/` next to the executable or add them to your system `PATH`.
+- Missing DLLs: Copy contents of `debs/dlls` next to the executable.
 - Font not found: Verify the path in `config.txt` matches an existing file under `fonts/`.
 - Black window or no text: Ensure the font loads successfully and the window size is valid.
 - Crashes on launch: Check `config.txt` line formats and value counts.
