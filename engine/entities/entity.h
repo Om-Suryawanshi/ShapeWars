@@ -1,7 +1,8 @@
 #pragma once
-#include "SFML/Graphics.hpp"
-#include "../engine/config/vec2.h"
-#include "../engine/config/config.hpp"
+#include <SFML/Graphics.hpp>
+#include "../config/config.hpp"
+#include "../config/vec2.h"
+
 
 enum class EntityType 
 {
@@ -55,5 +56,6 @@ public:
 	void setLifetime(float life);
 	void setAge(float a) { age = a; }
 	void setVelocity(const vec2& v) { velocity = v; }
+	void rotate();
 };
 

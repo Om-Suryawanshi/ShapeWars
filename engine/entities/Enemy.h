@@ -5,7 +5,7 @@
 #include <random>
 #include <ctime>
 
-#include "../engine/config/config.hpp"
+#include "../config/config.hpp"
 
 
 class Enemy : public entity

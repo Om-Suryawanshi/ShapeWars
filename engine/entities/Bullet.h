@@ -1,7 +1,7 @@
 #pragma once
 #include "entity.h"
 #include <math.h>
-#include "../engine/config/config.hpp" //FPS
+#include "../config/config.hpp" //FPS
 
 
 class Bullet : public entity
@@ -17,4 +17,5 @@ public:
 	void draw(sf::RenderWindow& window) override;
 	vec2 getPos() const;
 	void die();
+	void rotate();
 };

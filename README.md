@@ -39,8 +39,8 @@ See [GameSpecifications.md](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad
 
 - Windows (recommended): Visual Studio 2022/2019 with MSVC toolchain
 - SFML runtime DLLs are bundled in `dlls/`
-- ImGui + ImGui-SFML sources are included under `imgui/`
-- Font asset at `fonts/MOELA.ttf`
+- ImGui + ImGui-SFML sources are included under `external/imgui`
+- Font asset at `assets/fonts/MOELA.ttf`
 
 > Note: The repository is set up for a Visual Studio workflow via the provided solution/project files. Cross-platform builds are possible, but you’ll need to set up your own build system (e.g., CMake) or adapt include/lib paths.
 

@@ -34,10 +34,8 @@ void GameManager::init()
 	entManager.createEntity<Player>();
 
 	// Enemy Spawner
-
 	randomSpeed = static_cast<float> (g_Config.game.enemy.minSpeed) + static_cast<float>(rand()) / RAND_MAX * (static_cast<float> (g_Config.game.enemy.maxSpeed) - static_cast<float> (g_Config.game.enemy.minSpeed));
 	randomSides = static_cast<float> (g_Config.game.enemy.minVertices) + (rand() % (static_cast<int>(g_Config.game.enemy.maxVertices) - static_cast<int>(g_Config.game.enemy.minVertices + 1)));
-
 	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / g_Config.game.window.frameLimit);
 
 
@@ -64,8 +62,6 @@ void GameManager::init()
 
 void GameManager::update()
 {
-	ImGui::SFML::Update(g_window, g_deltaClock.restart());
-
 	if (!isRunning()) { return; }
 	if (g_window.isOpen())
 	{
@@ -73,13 +69,13 @@ void GameManager::update()
 		{
 			ImGui::SFML::ProcessEvent(g_event);
 
+			// Close
 			if (g_event.type == sf::Event::Closed)
 			{
 				quit();
 				g_window.close();
 			}
 			
-
 			//Bullet fire logic
 			if (g_event.type == sf::Event::MouseButtonPressed &&
 				g_event.mouseButton.button == sf::Mouse::Left && !m_isPaused && !rewindSystem.isRewinding())
@@ -267,6 +263,8 @@ void GameManager::update()
 		}
 	}
 
+	ImGui::SFML::Update(g_window, g_deltaClock.restart());
+
 	ImGui::Begin("Entity Manager");
 
 	if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
@@ -285,6 +283,7 @@ void GameManager::update()
 			case EntityType::Player: typeName = "Player"; break;
 			case EntityType::Enemy: typeName = "Enemy"; break;
 			case EntityType::Bullet: typeName = "Bullet"; break;
+			case EntityType::MiniEnemy: typeName = "MiniEnemy"; break;
 			default: break;
 			}
 			ImGui::SameLine();
@@ -312,7 +311,7 @@ void GameManager::update()
 	entManager.update();
 	entManager.draw(g_window);
 
-	//ImGui::SFML::Render(g_window);
+	ImGui::SFML::Render(g_window);
 	rewindSystem.update();
 	g_window.draw(m_scoreText);
 	g_window.display();

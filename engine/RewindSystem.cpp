@@ -1,6 +1,5 @@
 #include "RewindSystem.h"
-#include <SFML/System.hpp>
-#include <iostream>
+
 
 RewindSystem::RewindSystem(EntityManager& manager, int maxFrames)
     : entManager(manager), maxFrameCount(maxFrames), m_rewinding(false), rewindIndex(0) {
