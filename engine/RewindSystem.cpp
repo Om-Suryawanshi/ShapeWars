@@ -1,68 +1,79 @@
 #include "RewindSystem.h"
-
+#include <iostream>
+#include <unordered_set>
 
 RewindSystem::RewindSystem(EntityManager& manager, int maxFrames)
-    : entManager(manager), maxFrameCount(maxFrames), m_rewinding(false), rewindIndex(0) {
+    : entManager(EntityManager::getInstance()), maxFrameCount(maxFrames), m_rewinding(false), rewindIndex(0),
+    m_writeIndex(0), m_recordedCount(0) {
+
+    history.resize(maxFrames);
 }
 
 void RewindSystem::update() {
-    // Log number of entities currently in the game world
-    const auto& entities = entManager.getAllEnt();
-    //std::cerr << "[RewindSystem] Entities in snapshot: " << entities.size() << "\n";
-
     if (m_rewinding) {
-        //std::cerr << "[RewindSystem] Rewinding... index: " << rewindIndex << "\n";
+        if (m_rewindClock.getElapsedTime().asMilliseconds() >= 10) {
+            m_rewindClock.restart();
 
-        if (rewindIndex >= 0 && rewindIndex < static_cast<int>(history.size())) {
-            loadSnapShot(history[rewindIndex--]);
-            sf::sleep(sf::milliseconds(10)); // Visual slow-mo effect
-        }
-        else {
-            std::cerr << "[RewindSystem] Rewind complete.\n";
-            m_rewinding = false;
-            history.clear();
+            if (m_recordedCount > 0) {
+
+                if (m_writeIndex == 0) {
+                    m_writeIndex = maxFrameCount - 1;
+                }
+                else {
+                    m_writeIndex--;
+                }
+
+                loadSnapShot(history[m_writeIndex]);
+
+                m_recordedCount--;
+
+                rewindIndex--;
+            }
+            else {
+                std::cerr << "[RewindSystem] Rewind reached beginning of time.\n";
+                m_rewinding = false;
+            }
         }
         return;
     }
 
-    // Take a snapshot of current state
-    FrameSnapshot snapshot;
-    for (const auto& [id, ent] : entities) {
-        snapshot.push_back(SnapshotEntityData{
-            ent->getType(),
-            ent->getPos(),
-            ent->getVelocity(),
-            ent->getSize(),
-            ent->getVertices(),
-            ent->getLifetime(),
-            ent->getAge(),
-            ent->getisAlive()
-            });
-    }
+    if (!isPaused) {
+        const auto& entities = entManager.getAllEnt();
+        FrameSnapshot& snapshot = history[m_writeIndex];
 
-    // Only store meaningful (non-empty) snapshots
-    if (!snapshot.empty() && !isPaused) {
-        history.push_back(snapshot);
-        //std::cerr << "[RewindSystem] Snapshot recorded with " << snapshot.size() << " entities. Total snapshots: " << history.size() << "\n";
+        snapshot.clear();
 
-        if (history.size() > maxFrameCount) {
-            history.pop_front();
+        for (const auto& [id, ent] : entities) {
+            if (ent && ent->getisAlive()) {
+                snapshot.push_back(SnapshotEntityData{
+                    id,
+                    ent->getType(),
+                    ent->getPos(),
+                    ent->getVelocity(),
+                    ent->getSize(),
+                    ent->getVertices(),
+                    ent->getLifetime(),
+                    ent->getAge(),
+                    ent->getisAlive()
+                    });
+            }
+        }
+
+        if (!snapshot.empty()) {
+            m_writeIndex = (m_writeIndex + 1) % maxFrameCount;
+
+            if (m_recordedCount < maxFrameCount) {
+                m_recordedCount++;
+            }
         }
     }
-    // else {
-    //   std::cerr << "[RewindSystem] Skipped empty snapshot.\n";
-    // }
 }
-
 void RewindSystem::triggerRewind() {
-    if (!history.empty()) {
-        rewindIndex = static_cast<int>(history.size()) - 1;
+    if (m_recordedCount > 0) {
+        rewindIndex = static_cast<int>(m_recordedCount) - 1;
         m_rewinding = true;
-        //std::cerr << "[RewindSystem] Rewind triggered. Starting at index: " << rewindIndex << "\n";
+        m_rewindClock.restart();
     }
-    //else {
-        //std::cerr << "[RewindSystem] Rewind failed - history is empty.\n";
-    //}
 }
 
 bool RewindSystem::isRewinding() const {
@@ -70,28 +81,46 @@ bool RewindSystem::isRewinding() const {
 }
 
 void RewindSystem::loadSnapShot(const FrameSnapshot& snapshot) {
-    //std::cerr << "[RewindSystem] Loading snapshot with " << snapshot.size() << " entities...\n";
 
-    entManager.clearAll();
+    auto& currentEntities = entManager.getAllEnt();
+    std::unordered_set<int> processedIDs;
 
     for (const auto& snap : snapshot) {
+        processedIDs.insert(snap.id);
+
+        auto it = currentEntities.find(snap.id);
+
         std::shared_ptr<entity> ent;
 
-        switch (snap.type) {
-        case EntityType::Player:
-            ent = entManager.createEntity<Player>();
-            break;
-        case EntityType::Enemy:
-        case EntityType::MiniEnemy: {
-            float speed = std::sqrt(snap.velocity.x * snap.velocity.x + snap.velocity.y * snap.velocity.y);
-            ent = entManager.createEntity<Enemy>(speed, snap.radius, static_cast<float>(snap.vertices), snap.type);
-            break;
+        if (it != currentEntities.end()) {
+            ent = it->second;
         }
-        case EntityType::Bullet:
-            ent = entManager.createEntity<Bullet>(snap.pos, snap.velocity);
-            break;
+        else {
+            switch (snap.type) {
+            case EntityType::Player:
+                ent = entManager.createEntity<Player>();
+                break;
+            case EntityType::Enemy:
+            case EntityType::MiniEnemy: {
+                float speed = std::sqrt(snap.velocity.x * snap.velocity.x + snap.velocity.y * snap.velocity.y);
+                ent = entManager.createEntity<Enemy>(speed, snap.radius, static_cast<float>(snap.vertices), snap.type);
+                break;
+            }
+            case EntityType::Bullet:
+                ent = entManager.createEntity<Bullet>(snap.pos, snap.velocity);
+                break;
+            }
+            int tempId = -1;
+            for (auto& [id, e] : currentEntities) {
+                if (e == ent) { tempId = id; break; }
+            }
+
+            if (tempId != -1) {
+                entManager.remapEntity(tempId, snap.id);
+            }
         }
 
+        // Apply State Data
         if (ent) {
             ent->setPos(snap.pos);
             ent->setVelocity(snap.velocity);
@@ -99,16 +128,27 @@ void RewindSystem::loadSnapShot(const FrameSnapshot& snapshot) {
             ent->setAge(snap.age);
         }
     }
+
+    for (auto it = currentEntities.begin(); it != currentEntities.end(); ) {
+        int currentId = it->first;
+        it++;
+
+        if (processedIDs.find(currentId) == processedIDs.end()) {
+            entManager.markForRemoval(currentId);
+        }
+    }
+
+    entManager.destroyEnt();
 }
 
-void RewindSystem::clearHistory() 
+void RewindSystem::clearHistory()
 {
-    history.clear();
+    m_writeIndex = 0;
+    m_recordedCount = 0;
     rewindIndex = 0;
     m_rewinding = false;
     std::cerr << "[RewindSystem] History cleared manually.\n";
 }
-
 
 void RewindSystem::pauseCapture()
 {

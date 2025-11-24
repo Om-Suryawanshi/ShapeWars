@@ -11,6 +11,7 @@
 #include <SFML/Graphics.hpp>
 
 struct SnapshotEntityData {
+	int id;
 	EntityType type;
 	vec2 pos;
 	vec2 velocity;
@@ -43,5 +44,8 @@ private:
 	int rewindIndex = 0;
 	bool m_rewinding = false;
 	int isPaused = false;
+	size_t m_writeIndex = 0; // Tracks where we write the next snapshot
+	size_t m_recordedCount = 0; // Tracks how many valid frames we have
+	sf::Clock m_rewindClock;
 };
 

@@ -120,3 +120,17 @@ void EntityManager::clearAll()
 	entities.clear();
 	entToRemove.clear();
 }
+
+void EntityManager::remapEntity(int oldId, int newId)
+{
+	if (oldId == newId) return;
+
+	auto it = entities.find(oldId);
+	if (it != entities.end()) {
+		std::shared_ptr<entity> ent = it->second;
+
+		entities.erase(it);
+
+		entities[newId] = ent;
+	}
+}

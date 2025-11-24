@@ -15,8 +15,7 @@ private:
 	int nextId;
 	std::unordered_map<int, std::shared_ptr<entity> > entities;
 	std::vector<int> entToRemove;
-	void markForRemoval(int id);
-	void destroyEnt();
+
 
 public:
 	EntityManager();
@@ -42,5 +41,8 @@ public:
 	std::shared_ptr<entity> getPlayer();
 	std::vector<entity*> getByType(EntityType type);
 	void clearAll(); // Risky shit dont use unless needed
+	void remapEntity(int oldId, int newId);
+	void markForRemoval(int id);
+	void destroyEnt();
 };
 
