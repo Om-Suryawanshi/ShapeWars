@@ -4,7 +4,7 @@
 
 #include "scenes/Scene.hpp"
 #include "scenes/MainMenu.h"
-//#include "scenes/SinglePlayer.h"
+#include "scenes/SinglePlayer.h"
 #include "EntityManager.h"
 
 enum class SceneID
@@ -19,8 +19,7 @@ class SceneManager
 private:
 	std::stack<std::unique_ptr<Scene>> scenes;
 	sf::RenderWindow* window;
-	std::unique_ptr<Scene> m_currentScene;
-	EntityManager entManager;
+	EntityManager& entManager;
 	SceneManager();
 	SceneManager(const SceneManager&) = delete;
 	SceneManager& operator=(const SceneManager&) = delete;
@@ -30,9 +29,6 @@ public:
 	void pushScene(std::unique_ptr<Scene> scene);
 	void popScene();
 	void changeScene(std::unique_ptr<Scene> scene);
-	void mainMenu();
-	void COOPMenu();
-	void SinglePlayerMenu();
 	Scene* getCurrentScene();
 	bool isEmpty() const;
 	void setRenderWindow(sf::RenderWindow* win);

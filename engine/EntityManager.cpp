@@ -113,6 +113,8 @@ const std::unordered_map<int, std::shared_ptr<entity>>& EntityManager::getAllEnt
 	return entities;
 }
 
+
+// Very risky do not use allways causes nullptr deref
 void EntityManager::clearAll()
 {
 	entities.clear();

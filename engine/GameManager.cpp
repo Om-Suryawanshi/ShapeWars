@@ -35,7 +35,7 @@ void GameManager::init()
 	// Not implemented
 
 	sceneManager.setRenderWindow(&g_window);
-	sceneManager.mainMenu();
+	sceneManager.loadScene(SceneID::MainMenu);
 }
 
 

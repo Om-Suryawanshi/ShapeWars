@@ -40,8 +40,6 @@ SinglePlayerScene::SinglePlayerScene()
 
 	scoreText.setPosition(10.f, 10.f);
 	scoreText.setString("Score: 0");
-	g_window.draw(BackButton);
-	g_window.draw(BackButtonText);
 }
 
 void SinglePlayerScene::handleEvent(const sf::Event& event)
@@ -62,6 +60,12 @@ void SinglePlayerScene::handleEvent(const sf::Event& event)
 			vec2 playerPos = playerEnt->getPos();
 			vec2 direction = mousePos - playerPos;
 			entManager.createEntity<Bullet>(playerPos, direction);
+		}
+
+		if (BackButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePixel)))
+		{
+			sceneManager.loadScene(SceneID::MainMenu);
+			//rewindSystem.clearHistory();
 		}
 	}
 
@@ -225,12 +229,11 @@ void SinglePlayerScene::update(float deltaTime)
 		}
 	}
 
+	scoreText.setString("Score: " + std::to_string(score));
+
 	sf::Time dt = sf::seconds(deltaTime);
-
 	ImGui::SFML::Update(g_window, dt);
-
 	ImGui::Begin("Entity Manager");
-
 	if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		auto& allEntities = entManager.getAllEnt();
@@ -265,16 +268,24 @@ void SinglePlayerScene::update(float deltaTime)
 			ImGui::PopID();
 		}
 	}
-
 	ImGui::End();
+	rewindSystem.update(); // Allways keep rewind before clear or else it will fuck it up
 	g_window.clear();
 	entManager.update(deltaTime);
-	rewindSystem.update();
 }
 
 void SinglePlayerScene::render(sf::RenderWindow& window)
 {
 	window.draw(scoreText);
+	window.draw(BackButton);
+	window.draw(BackButtonText);
 	entManager.draw(window);
 	ImGui::SFML::Render(g_window);
+}
+
+SinglePlayerScene::~SinglePlayerScene()
+{
+	std::cout << "SinglePlayerScene destroyed\n";
+	entManager.clearAll();
+	rewindSystem.clearHistory();
 }

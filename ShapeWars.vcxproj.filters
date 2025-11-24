@@ -488,5 +488,6 @@
   </ItemGroup>
   <ItemGroup>
     <Font Include="assets\fonts\MOELA.ttf" />
+    <Font Include="assets\fonts\delutchy.ttf" />
   </ItemGroup>
 </Project>

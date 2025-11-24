@@ -43,11 +43,11 @@ void MainScene::handleEvent(const sf::Event& event)
 	{
 		if(isMouseOver(singlePlayerplayButton, *sceneManager.getRenderWindow()))
 		{
-			//sceneManager.SinglePlayerMenu();
+			sceneManager.loadScene(SceneID::SinglePLayer);
 		}
 		else if (isMouseOver(coopPlayButton, *sceneManager.getRenderWindow()))
 		{
-			sceneManager.COOPMenu();
+			sceneManager.loadScene(SceneID::COOP);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 #include "SceneManager.h"
 
 SceneManager::SceneManager()
+	:entManager(EntityManager::getInstance())
 {
 	window = nullptr;
 }
@@ -23,25 +24,28 @@ void SceneManager::popScene()
 
 void SceneManager::changeScene(std::unique_ptr<Scene> scene)
 {
-	popScene();
+	while(!scenes.empty())
+		popScene();
 	scenes.push(std::move(scene));
 }
 
-void SceneManager::mainMenu()
+void SceneManager::loadScene(SceneID id)
 {
-	changeScene(std::make_unique<MainScene>());
+	switch (id)
+	{
+	case SceneID::MainMenu:
+		changeScene(std::make_unique<MainScene>());
+		break;
+	case SceneID::COOP:
+		break;
+	case SceneID::SinglePLayer:
+		changeScene(std::make_unique<SinglePlayerScene>());
+		break;
+	default:
+		break;
+	}
 }
 
-void SceneManager::COOPMenu()
-{
-
-}
-/*
-void SceneManager::SinglePlayerMenu()
-{
-	changeScene(std::make_unique<SinglePlayerScene>());
-}
-*/
 Scene* SceneManager::getCurrentScene()
 {
 	return scenes.empty() ? nullptr : scenes.top().get();
@@ -50,20 +54,6 @@ Scene* SceneManager::getCurrentScene()
 bool SceneManager::isEmpty() const
 {
 	return scenes.empty();
-}
-
-void SceneManager::loadScene(SceneID id)
-{
-	switch (id)
-	{
-	case SceneID::MainMenu:
-		//m_currentScene = std::make_unique<>();
-		break;
-	case SceneID::COOP:
-		break;
-	case SceneID::SinglePLayer:
-		break;
-	}
 }
 
 void SceneManager::setRenderWindow(sf::RenderWindow* win)

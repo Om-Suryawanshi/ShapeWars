@@ -6,14 +6,6 @@
 #include "../RewindSystem.h"
 #include "../Collision.h"
 
-#include "../entities/Bullet.h"
-#include "../entities/Player.h"
-#include "../entities/Enemy.h"
-
-class Player;
-class Bullet;
-class Enemy;
-
 #include <imgui.h>
 #include <imgui-SFML.h>
 
@@ -57,6 +49,7 @@ private:
 
 public:
 	SinglePlayerScene();
+	~SinglePlayerScene();
 	void handleEvent(const sf::Event& event);
 	void update(float deltaTime);
 	void render(sf::RenderWindow& window);

@@ -349,6 +349,7 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <Text Include="config.txt" />
   </ItemGroup>
   <ItemGroup>
+    <Font Include="assets\fonts\delutchy.ttf" />
     <Font Include="assets\fonts\MOELA.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
