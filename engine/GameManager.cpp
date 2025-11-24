@@ -4,10 +4,14 @@ Config g_Config;
 
 GameManager::GameManager()
 	:g_running(true)
+	,entManager(EntityManager::getInstance())
+	,assetHandler(AssetHandler::getInstance())
+	,sceneManager(SceneManager::getInstance())
 	,rewindSystem(entManager, 300) // Save 300 frames
 {
 	if (g_Config.readConfig("CONFIG.txt"))
 	{
+		assetHandler.loadFont("mainFont", g_Config.game.font.path);
 		init();
 	}
 }
@@ -41,13 +45,8 @@ void GameManager::init()
 
 	g_ImguiStyle = ImGui::GetStyle();
 
-	if (!m_font.loadFromFile(g_Config.game.font.path))
-	{
-		std::cerr << "Failed to load font!" << std::endl;
-	}
-
 	// Set up score text
-	m_scoreText.setFont(m_font);
+	m_scoreText.setFont(assetHandler.getFont("mainFont"));
 	m_scoreText.setCharacterSize(g_Config.game.font.size); // from config maybe
 	m_scoreText.setFillColor(sf::Color(
 		g_Config.game.font.r,
@@ -308,7 +307,7 @@ void GameManager::update()
 	
 	updateScoreText();
 
-	entManager.update();
+	entManager.update(g_deltaClock.getElapsedTime().asSeconds());
 	entManager.draw(g_window);
 
 	ImGui::SFML::Render(g_window);

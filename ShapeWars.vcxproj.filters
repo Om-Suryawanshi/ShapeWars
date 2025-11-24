@@ -57,6 +57,18 @@
     <ClCompile Include="external\imgui\imgui-SFML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="engine\SceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\scenes\MainMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\scenes\SinglePlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\AssetHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\GameManager.h">
@@ -410,6 +422,21 @@
     <ClInclude Include="external\libraries\include\SFML\Window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="engine\SceneManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\scenes\Scene.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\scenes\MainMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\scenes\SinglePlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\AssetHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="LICENSE" />
@@ -444,6 +471,17 @@
       <Filter>Header Files</Filter>
     </None>
     <None Include="README.md" />
+    <None Include="deps\bin\openal32.dll" />
+    <None Include="deps\bin\sfml-audio-2.dll" />
+    <None Include="deps\bin\sfml-audio-d-2.dll" />
+    <None Include="deps\bin\sfml-graphics-2.dll" />
+    <None Include="deps\bin\sfml-graphics-d-2.dll" />
+    <None Include="deps\bin\sfml-network-2.dll" />
+    <None Include="deps\bin\sfml-network-d-2.dll" />
+    <None Include="deps\bin\sfml-system-2.dll" />
+    <None Include="deps\bin\sfml-system-d-2.dll" />
+    <None Include="deps\bin\sfml-window-2.dll" />
+    <None Include="deps\bin\sfml-window-d-2.dll" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="config.txt" />

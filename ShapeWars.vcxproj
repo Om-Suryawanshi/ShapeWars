@@ -175,12 +175,16 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="engine\AssetHandler.cpp" />
     <ClCompile Include="engine\Collision.cpp" />
     <ClCompile Include="engine\entities\Bullet.cpp" />
     <ClCompile Include="engine\entities\Enemy.cpp" />
     <ClCompile Include="engine\GameManager.cpp" />
     <ClCompile Include="engine\EntityManager.cpp" />
     <ClCompile Include="engine\entities\entity.cpp" />
+    <ClCompile Include="engine\SceneManager.cpp" />
+    <ClCompile Include="engine\scenes\MainMenu.cpp" />
+    <ClCompile Include="engine\scenes\SinglePlayer.cpp" />
     <ClCompile Include="external\imgui\imgui-SFML.cpp" />
     <ClCompile Include="external\imgui\imgui.cpp" />
     <ClCompile Include="external\imgui\imgui_draw.cpp" />
@@ -191,6 +195,7 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClCompile Include="engine\RewindSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="engine\AssetHandler.h" />
     <ClInclude Include="engine\Collision.h" />
     <ClInclude Include="engine\config\config.hpp" />
     <ClInclude Include="engine\entities\Bullet.h" />
@@ -201,6 +206,10 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClInclude Include="engine\config\vec2.h" />
     <ClInclude Include="engine\entities\Player.h" />
     <ClInclude Include="engine\RewindSystem.h" />
+    <ClInclude Include="engine\SceneManager.h" />
+    <ClInclude Include="engine\scenes\MainMenu.h" />
+    <ClInclude Include="engine\scenes\Scene.hpp" />
+    <ClInclude Include="engine\scenes\SinglePlayer.h" />
     <ClInclude Include="external\imgui\imconfig-SFML.h" />
     <ClInclude Include="external\imgui\imconfig.h" />
     <ClInclude Include="external\imgui\imgui-SFML.h" />

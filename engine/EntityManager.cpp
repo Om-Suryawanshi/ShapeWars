@@ -7,6 +7,12 @@ EntityManager::EntityManager()
 
 }
 
+EntityManager& EntityManager::getInstance()
+{
+	static EntityManager instance;
+	return instance;
+}
+
 void EntityManager::markForRemoval(int id)
 {
 	entToRemove.push_back(id);
@@ -21,7 +27,7 @@ void EntityManager::destroyEnt()
 	entToRemove.clear();
 }
 
-void EntityManager::update()
+void EntityManager::update(float deltaTime)
 {
 	for (auto& [id, ent] : entities)
 	{

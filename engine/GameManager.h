@@ -8,6 +8,8 @@
 //#include "Player.h"
 #include "config/config.hpp"
 #include "EntityManager.h"
+#include "SceneManager.h"
+#include "AssetHandler.h"
 #include "RewindSystem.h"
 #include "entities/player.h"
 #include "entities/Enemy.h"
@@ -28,7 +30,9 @@ protected:
 	int maxEnemies;
 	bool m_isPaused = false;
 	Collision collision;
-	EntityManager entManager;
+	SceneManager& sceneManager;
+	AssetHandler& assetHandler;
+	EntityManager& entManager;
 	RewindSystem rewindSystem;
 
 	// Score
@@ -36,8 +40,6 @@ protected:
 	int m_highScore = 0;
 	int m_respawnPenalty = 500;
 	sf::Text m_scoreText;
-	sf::Font m_font;
-
 	void update(); // Main Game method called every frame
 
 

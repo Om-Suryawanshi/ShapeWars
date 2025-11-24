@@ -20,6 +20,8 @@ private:
 
 public:
 	EntityManager();
+	EntityManager(const EntityManager&) = delete;
+	static EntityManager& getInstance();
 	template <typename T, typename... Args>
 	std::shared_ptr<T> createEntity(Args&&... args)
 	{
@@ -32,7 +34,7 @@ public:
 	const std::unordered_map<int, std::shared_ptr<entity>>& getAllEnt() const;
 
 	std::shared_ptr<entity> getEnt(int id);
-	void update(); // Call update to all entities
+	void update(float deltaTime); // Call update to all entities
 	void draw(sf::RenderWindow& window);
 	void pauseEnt();
 	int countByType(EntityType type);
