@@ -18,7 +18,7 @@ Player::Player(int id)
 	player.setPosition(pos.x, pos.y);
 }
 
-void Player::update()
+void Player::update(float deltaTime)
 {
 	if (!paused)
 	{

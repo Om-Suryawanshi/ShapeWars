@@ -65,7 +65,7 @@ void MainScene::update(float deltaTime)
 	}
 	else
 	{
-		singlePlayerplayButton.setFillColor(sf::Color(128, 128, 128));
+		singlePlayerplayText.setFillColor(sf::Color(128, 128, 128));
 	}
 
 	if (isMouseOver(coopPlayButton, *window))

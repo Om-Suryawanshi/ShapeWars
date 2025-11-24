@@ -1,6 +1,5 @@
 #pragma once
-#include <imgui.h>
-#include <imgui-SFML.h>
+
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <iostream>
@@ -19,29 +18,15 @@ class GameManager
 protected:
 	sf::RenderWindow g_window;
 	sf::Clock g_deltaClock;
-	ImGuiStyle g_ImguiStyle;
 	bool g_running;
 	sf::Event g_event;
-	float randomSpeed;
-	float randomSides;
-	sf::Clock enemySpawnClock;
-	int enemySpawnIntervalMs;
-	int currentEnemies;
-	int maxEnemies;
-	bool m_isPaused = false;
+
 	Collision collision;
 	SceneManager& sceneManager;
 	AssetHandler& assetHandler;
 	EntityManager& entManager;
-	RewindSystem rewindSystem;
 
-	// Score
-	int m_score = 0;
-	int m_highScore = 0;
-	int m_respawnPenalty = 500;
-	sf::Text m_scoreText;
 	void update(); // Main Game method called every frame
-
 
 public:
 	GameManager();

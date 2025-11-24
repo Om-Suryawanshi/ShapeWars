@@ -13,7 +13,7 @@ public:
 	sf::CircleShape player;
 
 	Player(int id);
-	void update();
+	void update(float deltaTime);
 	void draw(sf::RenderWindow& window);
 	vec2 getPos() const;
 	void die();

@@ -37,6 +37,7 @@ void AssetHandler::loadFont(const std::string& name, const std::string& path)
 		throw std::runtime_error("Font Path not found");
 	}
 	fonts[name] = std::move(font);
+	//std::cout << "Font Loaded: " << name << " from " << path << std::endl;
 }
 
 void AssetHandler::unloadTexture(const std::string& name)

@@ -22,7 +22,7 @@ Bullet::Bullet(int id, vec2 startPos, vec2 direction)
 	bullet.setPosition(pos.x, pos.y);
 }
 
-void Bullet::update()
+void Bullet::update(float deltaTime)
 {
 	if (!paused)
 	{

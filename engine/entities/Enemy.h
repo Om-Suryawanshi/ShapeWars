@@ -17,7 +17,7 @@ protected:
 public:
 	sf::CircleShape enemy;
 	Enemy(int id, float speed, float size, float sides, EntityType type);
-	void update();
+	void update(float deltaTime);
 	//bool colide(vec2& playerPos);
 	void draw(sf::RenderWindow& window);
 	vec2 getPos() const;

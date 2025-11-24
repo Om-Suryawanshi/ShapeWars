@@ -31,7 +31,7 @@ void EntityManager::update(float deltaTime)
 {
 	for (auto& [id, ent] : entities)
 	{
-		if (ent) ent->update();
+		if (ent) ent->update(deltaTime);
 		if (!ent->getisAlive())
 		{
 			markForRemoval(id);

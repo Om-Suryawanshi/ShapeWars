@@ -34,7 +34,7 @@ Enemy::Enemy(int id, float speed, float size, float sides, EntityType enemyType)
 	enemy.setPosition(pos.x, pos.y);
 }
 
-void Enemy::update()
+void Enemy::update(float deltaTime)
 {
 	if (!paused)
 	{

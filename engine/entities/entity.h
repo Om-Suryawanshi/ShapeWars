@@ -34,7 +34,7 @@ public:
 	explicit entity(int id, float speed, float size, float sides, vec2& pos) : id(id), speed(speed), size(size), sides(static_cast<int>(sides)), pos(pos) {} // Used for bullet
 
 	virtual ~entity() = default;
-	virtual void update() = 0;
+	virtual void update(float deltaTime) = 0;
 	virtual void draw(sf::RenderWindow& window) = 0;
 	void die();
 	void pause();
