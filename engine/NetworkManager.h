@@ -15,18 +15,24 @@
 
 // Renamed INPUT to PKT_INPUT to fix conflict with Windows API
 enum PacketType {
-    SEARCH_REQ = 0, // Client asks: "Any hosts?"
-    SEARCH_RES = 1, // Host replies: "I am here!"
+    SEARCH_REQ = 0,     // Client asks: "Any hosts?"
+    SEARCH_RES = 1,     // Host replies: "I am here!"
     JOIN_REQ = 2,
     JOIN_ACK = 3,
-    PLAYER_POS = 4,    // "I am at X,Y"
-    SPAWN_ENTITY = 5,  // "Spawn Enemy at X,Y"
-    REWIND_EVENT = 6,  // "Start/Stop Rewinding"
-    WORLD_STATE = 7    // "Correction data"
+    PLAYER_POS = 4,     // "I am at X,Y"
+    SPAWN_ENTITY = 5,   // "Spawn Enemy at X,Y"
+    REWIND_EVENT = 6,   // "Start/Stop Rewinding"
+    WORLD_STATE = 7,    // "Correction data"
+    PAUSE = 8           // true = paused, false = not paused
 };
 
 struct PacketHeader {
     int type;
+};
+
+struct PausePacket {
+    PacketHeader header = { PAUSE };
+    bool newPauseState; // true = paused, false = unpaused
 };
 
 struct PlayerPosPacket {

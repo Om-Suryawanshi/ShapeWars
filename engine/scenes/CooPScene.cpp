@@ -12,7 +12,7 @@ CoopScene::CoopScene()
 		// --- HOST SETUP ---
 		// 1. Create Host Player (Red)
 		localPlayer = entManager.createEntity<Player>();
-		remotePlayer = entManager.createEntity<Player>();
+		remotePlayer = entManager.createEntity<Player>(true); // True for remotePlayer
 		if (net.isHost) {
 			localPlayer->setPos({ 200.f, 300.f });
 			remotePlayer->setPos({ 400.f, 300.f });
@@ -35,7 +35,24 @@ CoopScene::~CoopScene()
 
 void CoopScene::handleEvent(const sf::Event& event)
 {
-	// Pause menu logic here if needed
+	NetworkManager& net = NetworkManager::getInstance();
+
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P && !rewindSystem.isRewinding())
+	{
+		PausePacket pkt;
+		pkt.newPauseState = !isPaused;
+		net.sendPacket(&pkt, sizeof(pkt));
+		isPaused = !isPaused;
+		entManager.pauseEnt();
+	}
+
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R && !rewindSystem.isRewinding() && !isPaused)
+	{
+		RewindPacket pkt;
+		pkt.isRewinding = true;
+		net.sendPacket(&pkt, sizeof(pkt));
+		rewindSystem.triggerRewind();
+	}
 }
 
 void CoopScene::update(float deltaTime)
@@ -46,6 +63,8 @@ void CoopScene::update(float deltaTime)
 		rewindSystem.update();
 		return;
 	}
+
+	if (isPaused) return;
 
 	if (net.isHost) {
 		// Run your normal enemy spawner logic here.
@@ -114,6 +133,7 @@ void CoopScene::handleNetworking()
 			remotePlayer->setVelocity(vec2(pkt->vx, pkt->vy));
 		}
 
+		// Not Working Prefectly Direct Teleportation
 		if (h->type == REWIND_EVENT)
 		{
 			RewindPacket* pkt = (RewindPacket*)buffer;
@@ -127,14 +147,24 @@ void CoopScene::handleNetworking()
 			}
 		}
 
-		else if (h->type == SPAWN_ENTITY && !net.isHost)
+		if (h->type == SPAWN_ENTITY && !net.isHost)
 		{
 			// Client reads packet: "Spawn Enemy at 100,100"
 			// entManager.createEntity<Enemy>(... set pos to 100,100 ...);
 		}
 
-		else if (h->type == WORLD_STATE && !net.isHost) {
+		if (h->type == WORLD_STATE && !net.isHost) {
 			// Snap enemies to correct pos
+		}
+
+		if (h->type == PAUSE)
+		{
+			PausePacket* pkt = (PausePacket*)buffer;
+			if (pkt->newPauseState != isPaused)
+			{
+				isPaused = !isPaused;
+				entManager.pauseEnt();
+			}
 		}
 	}
 }

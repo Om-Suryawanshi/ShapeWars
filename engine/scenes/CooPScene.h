@@ -28,6 +28,7 @@ public:
 	void handleEvent(const sf::Event& event) override;
 
 private:
+	bool isPaused = false;
 	void handleNetworking();
 	void sendMyPosition();
 	void syncEntity(const EntityState& state);

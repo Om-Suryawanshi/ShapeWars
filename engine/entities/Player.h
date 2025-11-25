@@ -8,11 +8,13 @@ class Player : public entity
 {
 protected:
 	bool justRespawned = false;
+	bool isRemote = false;
 
 public:
 	sf::CircleShape player;
 
 	Player(int id);
+	Player(int id, bool isRemote);
 	void update(float deltaTime);
 	void draw(sf::RenderWindow& window);
 	vec2 getPos() const;
