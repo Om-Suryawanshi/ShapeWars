@@ -4,12 +4,15 @@
 
 #include "scenes/Scene.hpp"
 #include "scenes/MainMenu.h"
+#include "scenes/LobbyScene.h"
+#include "scenes/CooPScene.h"
 #include "scenes/SinglePlayer.h"
 #include "EntityManager.h"
 
 enum class SceneID
 {
 	MainMenu,
+	CoopLobby,
 	COOP,
 	SinglePLayer
 };

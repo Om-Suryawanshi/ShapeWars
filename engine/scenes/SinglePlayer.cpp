@@ -18,7 +18,6 @@ SinglePlayerScene::SinglePlayerScene()
 	BackButtonText.setCharacterSize(28);
 	BackButtonText.setPosition(15, BackButton.getSize().y);
 
-	ImGui::SFML::Init(g_window);
 	g_ImguiStyle = ImGui::GetStyle();
 
 	// Create Player 

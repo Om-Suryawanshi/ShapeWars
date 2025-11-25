@@ -69,6 +69,15 @@
     <ClCompile Include="engine\AssetHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="engine\scenes\CooPScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\NetworkManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="engine\scenes\LobbyScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\GameManager.h">
@@ -435,6 +444,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\AssetHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\scenes\CooPScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\NetworkManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\scenes\LobbyScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

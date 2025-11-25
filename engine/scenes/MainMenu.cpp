@@ -47,7 +47,7 @@ void MainScene::handleEvent(const sf::Event& event)
 		}
 		else if (isMouseOver(coopPlayButton, *sceneManager.getRenderWindow()))
 		{
-			sceneManager.loadScene(SceneID::COOP);
+			sceneManager.loadScene(SceneID::CoopLobby);
 		}
 	}
 }

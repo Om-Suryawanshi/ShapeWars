@@ -36,7 +36,11 @@ void SceneManager::loadScene(SceneID id)
 	case SceneID::MainMenu:
 		changeScene(std::make_unique<MainScene>());
 		break;
+	case SceneID::CoopLobby:
+		changeScene(std::make_unique<LobbyScene>());
+		break;
 	case SceneID::COOP:
+		changeScene(std::make_unique<CoopScene>());
 		break;
 	case SceneID::SinglePLayer:
 		changeScene(std::make_unique<SinglePlayerScene>());

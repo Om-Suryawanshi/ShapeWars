@@ -138,7 +138,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;%(AdditionalDependencies);opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;%(AdditionalDependencies);opengl32.lib;ws2_32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(OutDir)assets"
@@ -164,7 +164,7 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;%(AdditionalDependencies);opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;%(AdditionalDependencies);opengl32.lib;ws2_32.lib</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>mkdir "$(OutDir)assets"
@@ -182,7 +182,10 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClCompile Include="engine\GameManager.cpp" />
     <ClCompile Include="engine\EntityManager.cpp" />
     <ClCompile Include="engine\entities\entity.cpp" />
+    <ClCompile Include="engine\NetworkManager.cpp" />
     <ClCompile Include="engine\SceneManager.cpp" />
+    <ClCompile Include="engine\scenes\CooPScene.cpp" />
+    <ClCompile Include="engine\scenes\LobbyScene.cpp" />
     <ClCompile Include="engine\scenes\MainMenu.cpp" />
     <ClCompile Include="engine\scenes\SinglePlayer.cpp" />
     <ClCompile Include="external\imgui\imgui-SFML.cpp" />
@@ -205,8 +208,11 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClInclude Include="engine\entities\entity.h" />
     <ClInclude Include="engine\config\vec2.h" />
     <ClInclude Include="engine\entities\Player.h" />
+    <ClInclude Include="engine\NetworkManager.h" />
     <ClInclude Include="engine\RewindSystem.h" />
     <ClInclude Include="engine\SceneManager.h" />
+    <ClInclude Include="engine\scenes\CooPScene.h" />
+    <ClInclude Include="engine\scenes\LobbyScene.h" />
     <ClInclude Include="engine\scenes\MainMenu.h" />
     <ClInclude Include="engine\scenes\Scene.hpp" />
     <ClInclude Include="engine\scenes\SinglePlayer.h" />
