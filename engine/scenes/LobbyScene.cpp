@@ -38,11 +38,11 @@ void LobbyScene::update(float deltatime)
 
 	if (isHosting)
 	{
-		updateHostLogic(deltatime);
+		if (updateHostLogic(deltatime)) return;
 	}
 	else if (isSearching)
 	{
-		updateClientLogic(deltatime);
+		if (updateClientLogic(deltatime)) return;
 	}
 	ImGui::Begin("Co-op Lobby", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 	ImGui::TextColored(ImVec4(0, 1, 0, 1), "MY IP: %s", myIP.c_str());
@@ -131,7 +131,7 @@ void LobbyScene::update(float deltatime)
 	ImGui::End();
 }
 
-void LobbyScene::updateHostLogic(float dt)
+bool LobbyScene::updateHostLogic(float dt)
 {
 	NetworkManager& net = NetworkManager::getInstance();
 	
@@ -171,11 +171,13 @@ void LobbyScene::updateHostLogic(float dt)
 			addLog("Sent JOIN_ACK. Starting Game...");
 
 			SceneManager::getInstance().loadScene(SceneID::COOP);
+			return true;
 		}
 	}
+	return false;
 }
 
-void LobbyScene::updateClientLogic(float dt)
+bool LobbyScene::updateClientLogic(float dt)
 {
 	NetworkManager& net = NetworkManager::getInstance();
 
@@ -223,8 +225,10 @@ void LobbyScene::updateClientLogic(float dt)
 			addLog("Received JOIN_ACK! Starting Game...");
 			net.connected = true;
 			SceneManager::getInstance().loadScene(SceneID::COOP);
+			return true;
 		}
 	}
+	return false;
 }
 
 void LobbyScene::render(sf::RenderWindow& window)

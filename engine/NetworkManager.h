@@ -19,17 +19,25 @@ enum PacketType {
     SEARCH_RES = 1, // Host replies: "I am here!"
     JOIN_REQ = 2,
     JOIN_ACK = 3,
-    PKT_INPUT = 4,
-    WORLD_STATE = 5
+    PLAYER_POS = 4,    // "I am at X,Y"
+    SPAWN_ENTITY = 5,  // "Spawn Enemy at X,Y"
+    REWIND_EVENT = 6,  // "Start/Stop Rewinding"
+    WORLD_STATE = 7    // "Correction data"
 };
 
 struct PacketHeader {
     int type;
 };
 
-struct InputPacket {
-    PacketHeader header = { PKT_INPUT };
-    bool w, a, s, d, space, rewind;
+struct PlayerPosPacket {
+    PacketHeader header = { PLAYER_POS };
+    float x, y;
+    float vx, vy;
+};
+
+struct RewindPacket {
+    PacketHeader header = { REWIND_EVENT };
+    bool isRewinding; // true = start, false = stop
 };
 
 // Simplified Entity State for network sync

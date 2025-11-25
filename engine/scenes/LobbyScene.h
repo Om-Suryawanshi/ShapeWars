@@ -42,6 +42,6 @@ public:
     void handleEvent(const sf::Event& event) override;
 
 private:
-    void updateHostLogic(float dt);
-    void updateClientLogic(float dt);
+    bool updateHostLogic(float dt);
+    bool updateClientLogic(float dt);
 };

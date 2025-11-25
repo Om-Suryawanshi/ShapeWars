@@ -1,20 +1,30 @@
-#include "CooPScene.h"
+#include "CoopScene.h"
+#include <iostream>
+#include <vector>
+#include <cstring> // for memcpy
 
 CoopScene::CoopScene()
-	:entManager(EntityManager::getInstance())
+	: entManager(EntityManager::getInstance())
 	, rewindSystem(entManager, 300)
 {
 	NetworkManager& net = NetworkManager::getInstance();
 
-	if (net.isHost)
-	{
-		localPlayer = entManager.createEntity<Player>(); // Id = 9
-		remotePlayer = entManager.createEntity<Player>(); // id = 1
-	}
-	else
-	{
-		// Wait for the host to temm em where things are
-	}
+		// --- HOST SETUP ---
+		// 1. Create Host Player (Red)
+		localPlayer = entManager.createEntity<Player>();
+		remotePlayer = entManager.createEntity<Player>();
+		if (net.isHost) {
+			localPlayer->setPos({ 200.f, 300.f });
+			remotePlayer->setPos({ 400.f, 300.f });
+			// Host is responsible for spawning enemies, so we don't do anything else yet
+		}
+		else {
+			// Client logic: Swap positions so we don't spawn on top of each other
+			localPlayer->setPos({ 400.f, 300.f });
+			remotePlayer->setPos({ 200.f, 300.f });
+			remotePlayer->setColor(sf::Color(255, 255, 255, 150));
+			std::cout << "[Coop] Client ready. Waiting for World State...\n";
+		}
 }
 
 CoopScene::~CoopScene()
@@ -25,99 +35,106 @@ CoopScene::~CoopScene()
 
 void CoopScene::handleEvent(const sf::Event& event)
 {
-	// Basic input logic (pause etc)
+	// Pause menu logic here if needed
 }
 
 void CoopScene::update(float deltaTime)
 {
 	NetworkManager& net = NetworkManager::getInstance();
-
-	if (net.isHost)
-	{
-		processHostLogic(deltaTime);
-	}
-	else
-	{
-		processClientLogic(deltaTime);
-	}
-}
-
-// Host Logic
-void CoopScene::processHostLogic(float dt)
-{
-	NetworkManager& net = NetworkManager::getInstance();
-
-	// Recive Input
-	char buffer[1024];
-	sockaddr_in sender;
-	int bytes = net.receivePacket(buffer, 1024, sender);
-	if (bytes > 0)
-	{
-		PacketHeader* h = (PacketHeader*)buffer;
-		if (h->type == PKT_INPUT && remotePlayer)
-		{
-			InputPacket* pkt = (InputPacket*)buffer;
-
-			// Apply input to remote player
-			// Helper fn like remotePlayer->applyInput(pkt->w, pkt>a)
-
-			if (pkt->rewind) rewindSystem.triggerRewind(); // No timer checks for now
-		}
+	handleNetworking();
+	if (rewindSystem.isRewinding()) {
+		rewindSystem.update();
+		return;
 	}
 
-	// Normal game logic like collision spawning etc
+	if (net.isHost) {
+		// Run your normal enemy spawner logic here.
+		// When you create an enemy, you must Send a Packet!
+		// Example:
+		// auto enemy = entManager.createEntity<Enemy>(...);
+		// sendSpawnPacket(enemy);
+	}
 
-	entManager.update(dt);
-	rewindSystem.update();
+	// 4. UPDATE PHYSICS
+	// Both sides run physics! Client predicts enemies.
+	entManager.update(deltaTime);
+	rewindSystem.update(); // Record history
 
-	if (networkTick.getElapsedTime().asMilliseconds() > 33)
-	{
-		std::vector<char> packet;
-		PacketHeader head{ WORLD_STATE };
-		// append header
-		// append count
-		// append all ent states
-
-		net.sendPacket(packet.data(), packet.size());
+	// 5. SEND MY POSITION (e.g. 60 times a sec or less)
+	if (networkTick.getElapsedTime().asMilliseconds() > 15) {
+		sendMyPosition();
 		networkTick.restart();
 	}
-}
 
-// Client logic
-void CoopScene::processClientLogic(float dt)
-{
-	NetworkManager& net = NetworkManager::getInstance();
-
-	// Send Client input
-	InputPacket pkt;
-	pkt.w = sf::Keyboard::isKeyPressed(sf::Keyboard::W);
-	pkt.a = sf::Keyboard::isKeyPressed(sf::Keyboard::A);
-	pkt.s = sf::Keyboard::isKeyPressed(sf::Keyboard::S);
-	pkt.d = sf::Keyboard::isKeyPressed(sf::Keyboard::D);
-	pkt.space = sf::Keyboard::isKeyPressed(sf::Keyboard::Space);
-	pkt.rewind = sf::Keyboard::isKeyPressed(sf::Keyboard::R);
-
-	net.sendPacket(&pkt, sizeof(pkt));
-
-	// Recv world state
-	char buffer[4096];
-	sockaddr_in sender;
-	int bytes = net.receivePacket(buffer, 4096, sender);
-
-	if (bytes > 0)
-	{
-		PacketHeader* h = (PacketHeader*)buffer;
-		if (h->type == WORLD_STATE)
-		{
-			// This function wipes current positions and applies the host's data
-			// syncEntitiesFromNetwork(buffer, bytes);
-		}
+	// 6. HOST: SEND CORRECTIONS (e.g. 10 times a sec)
+	// Prevents "Drift"
+	if (net.isHost && worldSyncTick.getElapsedTime().asMilliseconds() > 100) {
+		// Send WORLD_STATE packet containing Enemy positions only
+		// (Code omitted for brevity, logic same as before)
+		worldSyncTick.restart();
 	}
-	// Client does NOT run entManager.update(dt) for physics!
-	// Client only runs simple visual updates (particles, etc)
 }
 
 void CoopScene::render(sf::RenderWindow& window)
 {
+	// Crash Prevention: render() handles empty lists safely
 	entManager.draw(window);
+}
+
+void CoopScene::sendMyPosition()
+{
+	if (!localPlayer) return;
+
+	PlayerPosPacket pkt;
+	pkt.x = localPlayer->getPos().x;
+	pkt.y = localPlayer->getPos().y;
+	pkt.vx = localPlayer->getVelocity().x;
+	pkt.vy = localPlayer->getVelocity().y;
+
+	NetworkManager::getInstance().sendPacket(&pkt, sizeof(pkt));
+}
+
+void CoopScene::handleNetworking()
+{
+	NetworkManager& net = NetworkManager::getInstance();
+	char buffer[4096];
+	sockaddr_in sender;
+
+	while (true)
+	{
+		int bytes = net.receivePacket(buffer, 4096, sender);
+		if (bytes < 0) break;
+
+		PacketHeader* h = (PacketHeader*)buffer;
+
+		if (h->type == PLAYER_POS && remotePlayer)
+		{
+			PlayerPosPacket* pkt = (PlayerPosPacket*)buffer;
+			remotePlayer->setPos(vec2(pkt->x, pkt->y));
+			remotePlayer->setVelocity(vec2(pkt->vx, pkt->vy));
+		}
+
+		if (h->type == REWIND_EVENT)
+		{
+			RewindPacket* pkt = (RewindPacket*)buffer;
+			if (pkt->isRewinding)
+			{
+				rewindSystem.triggerRewind();
+			}
+			else 
+			{
+
+			}
+		}
+
+		else if (h->type == SPAWN_ENTITY && !net.isHost)
+		{
+			// Client reads packet: "Spawn Enemy at 100,100"
+			// entManager.createEntity<Enemy>(... set pos to 100,100 ...);
+		}
+
+		else if (h->type == WORLD_STATE && !net.isHost) {
+			// Snap enemies to correct pos
+		}
+	}
 }

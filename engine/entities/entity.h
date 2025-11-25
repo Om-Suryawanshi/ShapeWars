@@ -57,5 +57,6 @@ public:
 	void setAge(float a) { age = a; }
 	void setVelocity(const vec2& v) { velocity = v; }
 	void rotate();
+	void setColor(sf::Color color);
 };
 

@@ -85,3 +85,8 @@ float entity::getLifetime() const
 {
 	return lifetime;
 }
+
+void entity::setColor(sf::Color color)
+{
+
+}

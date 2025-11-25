@@ -63,3 +63,8 @@ void Player::rotate()
 {
 	player.rotate(2.0f);
 }
+
+void Player::setColor(sf::Color color)
+{
+	player.setFillColor(color);
+}

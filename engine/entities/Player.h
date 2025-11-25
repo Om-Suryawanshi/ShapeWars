@@ -18,4 +18,5 @@ public:
 	vec2 getPos() const;
 	void die();
 	void rotate();
+	void setColor(sf::Color color);
 };
