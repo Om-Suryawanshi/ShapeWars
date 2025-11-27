@@ -46,6 +46,36 @@ struct RewindPacket {
     bool isRewinding; // true = start, false = stop
 };
 
+
+struct BulletData
+{
+    int id;
+    float x, y;
+    float dx, dy; // Direction in which the bullet is fired
+};
+
+struct EnemyData
+{
+    int id;
+    float x, y;
+    float speed;
+    float radius;
+    int sides;
+    float angle;
+};
+
+struct SpawnPacket
+{
+    PacketHeader header = { SPAWN_ENTITY };
+    int type;
+
+    union {
+        BulletData bullet;
+        EnemyData enemy;
+    }data;
+};
+
+
 // Simplified Entity State for network sync
 struct EntityState {
     int id;

@@ -13,10 +13,12 @@ class Enemy : public entity
 protected:
 	float angle;
 	bool is_HitbyBullet = false;
+	sf::CircleShape enemy;
+
 
 public:
-	sf::CircleShape enemy;
-	Enemy(int id, float speed, float size, float sides, EntityType type);
+	Enemy(int id, float speed, float size, int sides, EntityType type, float angle);
+	Enemy(int id, float speed, float size, int sides, EntityType type);
 	void update(float deltaTime);
 	//bool colide(vec2& playerPos);
 	void draw(sf::RenderWindow& window);

@@ -23,9 +23,6 @@ SinglePlayerScene::SinglePlayerScene()
 	// Create Player 
 	entManager.createEntity<Player>();
 
-	// Enemy Spawner setup
-	randomSpeed = static_cast<float> (g_Config.game.enemy.minSpeed) + static_cast<float>(rand()) / RAND_MAX * (static_cast<float> (g_Config.game.enemy.maxSpeed) - static_cast<float> (g_Config.game.enemy.minSpeed));
-	randomSides = static_cast<float> (g_Config.game.enemy.minVertices) + (rand() % (static_cast<int>(g_Config.game.enemy.maxVertices) - static_cast<int>(g_Config.game.enemy.minVertices + 1)));
 	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / g_Config.game.window.frameLimit);
 
 	// Score Setup
@@ -45,22 +42,25 @@ void SinglePlayerScene::handleEvent(const sf::Event& event)
 {
 	ImGui::SFML::ProcessEvent(event);
 
-	//Bullet fire logic
+
+	// Mouse Left key press logic
 	if (event.type == sf::Event::MouseButtonPressed &&
 		event.mouseButton.button == sf::Mouse::Left && !m_isPaused && !rewindSystem.isRewinding())
 	{
+		//Bullet fire logic
 		sf::Vector2i mousePixel = sf::Mouse::getPosition(g_window);
 		sf::Vector2f mouseWorld = g_window.mapPixelToCoords(mousePixel);
 		vec2 mousePos(mouseWorld.x, mouseWorld.y);
 
 		std::shared_ptr<entity> playerEnt = entManager.getPlayer();
-		if (playerEnt && playerEnt->getType() == EntityType::Player)
+		if (playerEnt)
 		{
 			vec2 playerPos = playerEnt->getPos();
 			vec2 direction = mousePos - playerPos;
 			entManager.createEntity<Bullet>(playerPos, direction);
 		}
 
+		// Back button logic
 		if (BackButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePixel)))
 		{
 			sceneManager.loadScene(SceneID::MainMenu);
@@ -131,7 +131,10 @@ void SinglePlayerScene::update(float deltaTime)
 				int randomSides = g_Config.game.enemy.minVertices +
 					(rand() % (g_Config.game.enemy.maxVertices - g_Config.game.enemy.minVertices + 1));
 
-				auto newEnemy = entManager.createEntity<Enemy>(randomSpeed, enemyRadius, static_cast<float>(randomSides), EntityType::Enemy);
+				float angle = static_cast<float>((rand() % 360) * PI / 180.0f); // degrees to radians
+
+
+				auto newEnemy = entManager.createEntity<Enemy>(randomSpeed, enemyRadius, randomSides, EntityType::Enemy, angle);
 				newEnemy->setPos(spawnPos);
 			}
 		}

@@ -6,11 +6,11 @@
 
 enum class EntityType 
 {
-	None,
-	Player,
-	Enemy,
-	Bullet,
-	MiniEnemy
+	None = 0,
+	Player = 1,
+	Enemy = 2,
+	Bullet = 3,
+	MiniEnemy = 4
 };
 
 class entity

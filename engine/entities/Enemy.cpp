@@ -1,14 +1,14 @@
 #include "Enemy.h"
 
 
-Enemy::Enemy(int id, float speed, float size, float sides, EntityType enemyType)
+Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType, float a)
 	: entity(id,speed,size,sides)
 	, enemy(size, static_cast<size_t>(sides))	
+	, angle(a)
 {
 	isAlive = true;
 	type = enemyType;
 	age = 0;
-	angle = static_cast<float>((rand() % 360) * PI / 180.0f); // degrees to radians
 
 	velocity.x = std::cos(angle) * speed;
 	velocity.y = std::sin(angle) * speed;
@@ -23,15 +23,29 @@ Enemy::Enemy(int id, float speed, float size, float sides, EntityType enemyType)
 		g_Config.game.enemy.outlineB
 	)); 
 	enemy.setOutlineThickness(static_cast<float>(g_Config.game.enemy.outlineThickness));
+}
 
-	// random spawn logic
-	if (type == EntityType::Enemy)
-	{
-		float spawnX = size + static_cast<float>(rand() % static_cast<int>(g_Config.game.window.width - 2 * size));
-		float spawnY = size + static_cast<float>(rand() % static_cast<int>(g_Config.game.window.height - 2 * size));
-		pos = vec2(spawnX, spawnY);
-	}	
-	enemy.setPosition(pos.x, pos.y);
+Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType)
+	: entity(id, speed, size, sides)
+	, enemy(size, static_cast<size_t>(sides))
+{
+	isAlive = true;
+	type = enemyType;
+	age = 0;
+
+	velocity.x = std::cos(angle) * speed;
+	velocity.y = std::sin(angle) * speed;
+
+	lifetime = static_cast<float>(g_Config.game.enemy.lifespan);
+
+	enemy.setOrigin(size, size);
+	enemy.setFillColor(sf::Color::Transparent);
+	enemy.setOutlineColor(sf::Color(
+		g_Config.game.enemy.outlineR,
+		g_Config.game.enemy.outlineG,
+		g_Config.game.enemy.outlineB
+	));
+	enemy.setOutlineThickness(static_cast<float>(g_Config.game.enemy.outlineThickness));
 }
 
 void Enemy::update(float deltaTime)
