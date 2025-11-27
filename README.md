@@ -2,7 +2,7 @@
 
 Arcade-style 2D shooter built with C++ and SFML, featuring ImGui-powered debugging tools. Pilot a geometric player, shoot toward the mouse, dodge and destroy enemies that split into smaller shapes, and tune gameplay via a simple config file.
 
-- Languages: C++ (90.6%), C (8.3%), CMake (1.1%)
+- Languages: C++ (100%)
 - License: MIT
 
 ## Demo
