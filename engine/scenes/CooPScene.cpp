@@ -255,8 +255,8 @@ void CoopScene::update(float deltaTime)
 						spawnPkt.data.miniEnemy.vx = miniEnemy->getVelocity().x;
 						spawnPkt.data.miniEnemy.vy = miniEnemy->getVelocity().y;
 
-						spawnPkt.data.enemy.radius = miniEnemy->getSize();
-						spawnPkt.data.enemy.sides = miniEnemy->getVertices();
+						spawnPkt.data.miniEnemy.radius = miniEnemy->getSize();
+						spawnPkt.data.miniEnemy.sides = miniEnemy->getVertices();
 
 						net.sendPacket(&spawnPkt, sizeof(spawnPkt));
 					}
@@ -309,7 +309,8 @@ void CoopScene::update(float deltaTime)
 		networkTick.restart();
 	}
 
-	// 6. HOST: SEND CORRECTIONS (e.g. 10 times a sec)
+	// Later implementation first bug fix
+	// 6. HOST: SEND CORRECTIONS (e.g. 10 times a sec) 
 	// Prevents "Drift"
 	if (net.isHost && worldSyncTick.getElapsedTime().asMilliseconds() > 100) {
 		// Send WORLD_STATE packet containing Enemy positions only
@@ -411,6 +412,11 @@ void CoopScene::handleNetworking()
 			}
 		}
 
+		if (h->type == REWIND_CLEAR)
+		{
+			rewindSystem.clearHistory();
+		}
+
 		if (h->type == WORLD_STATE) {
 			// Snap enemies to correct pos
 		}
@@ -428,20 +434,31 @@ void CoopScene::handleNetworking()
 		if (h->type == SPAWN_ENTITY)
 		{
 			SpawnPacket* pkt = (SpawnPacket*)buffer;
+
 			if (pkt->type == (int)EntityType::Bullet)
 			{
-				auto entity = entManager.createEntityWithId<Bullet>(pkt->data.bullet.id, vec2(pkt->data.bullet.x, pkt->data.bullet.y), vec2(pkt->data.bullet.dx, pkt->data.bullet.dy));
+				auto entity = entManager.createEntityWithId<Bullet>(
+					pkt->data.bullet.id, 
+					vec2(pkt->data.bullet.x, pkt->data.bullet.y), 
+					vec2(pkt->data.bullet.dx, pkt->data.bullet.dy)
+				);
 			}
 
 			if (pkt->type == (int)EntityType::Enemy)
 			{
-				auto entity = entManager.createEntityWithId<Enemy>(pkt->data.enemy.id, pkt->data.enemy.speed, pkt->data.enemy.radius, pkt->data.enemy.sides, EntityType::Enemy, pkt->data.enemy.angle);
+				auto entity = entManager.createEntityWithId<Enemy>(
+					pkt->data.enemy.id, 
+					pkt->data.enemy.speed, 
+					pkt->data.enemy.radius, 
+					pkt->data.enemy.sides, 
+					EntityType::Enemy, 
+					pkt->data.enemy.angle
+				);
 				entity->setPos(vec2(pkt->data.enemy.x, pkt->data.enemy.y));
 			}
 
 			if (pkt->type == (int)EntityType::MiniEnemy)
 			{
-				vec2 dir(std::cos(pkt->data.enemy.angle), std::sin(pkt->data.enemy.angle));
 				auto entity = entManager.createEntityWithId<Enemy>(
 					pkt->data.miniEnemy.id,
 					0, // Speed is irrelevant we set valocity manually
@@ -452,42 +469,38 @@ void CoopScene::handleNetworking()
 				);
 				entity->setPos(vec2(pkt->data.miniEnemy.x, pkt->data.miniEnemy.y));
 				entity->setVelocity(vec2(pkt->data.miniEnemy.vx, pkt->data.miniEnemy.vy));
+				entity->setLifetime(10);
 			}
 		}
 
 		if (h->type == KILL_ENTITY)
 		{
 			KillEntityPacket* pkt = (KillEntityPacket*)buffer;
+
 			if (pkt->type == (int)EntityType::Player)
 			{
-				if(remotePlayer)
+				int oldID = -1;
+				if (remotePlayer)
+				{
+					oldID = remotePlayer->getId();
 					remotePlayer->die(); // If a kill pkt has come that means that the remote player has collided and has died.
+				}
 				rewindSystem.clearHistory();
 
-				remotePlayer = entManager.createEntity<Player>(true); // Spawn new remote player
-				remotePlayer->setPos({ 200.f, 300.f }); // No checking of enemy for now no cooldown either
+				if (oldID != -1)
+				{
+					remotePlayer = entManager.createEntityWithId<Player>(oldID, true); // Spawn new remote player
+					remotePlayer->setPos({ 200.f, 300.f }); // No checking of enemy for now no cooldown either
+				}
 			}
-
-			if (pkt->type == (int)EntityType::Enemy)
+			else // Else handle everything else (Enemy, MiniEnemy, Bullet)
 			{
-				//std::cerr << pkt->id << std::endl;
-				auto enemy = entManager.getEnt(pkt->id); 
-				if (enemy)
-					enemy->die();
-
+				auto entity = entManager.getEnt(pkt->id);
+				if (entity)
+				{
+					entity->die();
+				}
 			}
-
-			/*if (pkt->type == (int)EntityType::MiniEnemy)
-			{
-				auto enemy = entManager.getEnt(pkt->id);
-				if(enemy)
-					enemy->die();
-			}*/
-		}
-
-		if (h->type == REWIND_CLEAR)
-		{
-			rewindSystem.clearHistory();
 		}
 
 		if (h->type == SCORE)
