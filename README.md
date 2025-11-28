@@ -68,6 +68,7 @@ See [GameSpecifications.md](https://github.com/Om-Suryawanshi/ShapeWars/blob/5ad
 Gameplay is driven by `config.txt` in the repo root. Example:
 
 ```text
+System 1
 Window 1600 800 60 0
 Font fonts/MOELA.ttf 24 255 255 255
 Player 32 32 5 5 5 5 255 0 0 4 8
@@ -75,6 +76,7 @@ Enemy 32 32 3 3 255 255 255 2 3 8 90 60
 Bullet 10 10 8 255 255 255 255 255 255 2 20 90
 ```
 
+- System: `System <debugMode(0/1)>`
 - Window: `Window <W> <H> <FrameLimit> <Fullscreen(0/1)>`
 - Font: `Font <File> <Size> <R> <G> <B>`
 - Player: `Player <ShapeRadius> <CollisionRadius> <Speed> <FillR> <FillG> <FillB> <OutlineR> <OutlineG> <OutlineB> <OutlineThickness> <Vertices>`

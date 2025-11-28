@@ -17,7 +17,10 @@ GameManager::GameManager()
 
 void GameManager::init()
 {
-	ImGui::SFML::Init(g_window);
+	if (g_Config.game.system.debugMode)
+	{
+		ImGui::SFML::Init(g_window);
+	}
 
 	// Full Screen logic
 	std::cerr << g_Config.game.window.fullscreen << std::endl;

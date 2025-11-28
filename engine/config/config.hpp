@@ -10,6 +10,10 @@
 #define PI 3.14159f
 #define FPS 240
 
+struct SystemConfig {
+	bool debugMode; // true = Debug, false = Release
+};
+
 struct WindowConfig {
 	int width, height, frameLimit, fullscreen;
 };
@@ -44,6 +48,7 @@ struct BulletConfig {
 };
 
 struct GameConfig {
+	SystemConfig system;
 	WindowConfig window;
 	FontConfig font;
 	PlayerConfig player;
@@ -67,8 +72,13 @@ public:
 			std::istringstream iss(line);
 			std::string type;
 			iss >> type;
-
-			if (type == "Window") {
+			if (type == "System") {
+				int mode;
+				iss >> mode;
+				// Convert integer 1/0 to boolean
+				game.system.debugMode = (mode == 1);
+			}
+			else if (type == "Window") {
 				iss >> game.window.width >> game.window.height >> game.window.frameLimit >> game.window.fullscreen;
 			}
 			else if (type == "Font") {

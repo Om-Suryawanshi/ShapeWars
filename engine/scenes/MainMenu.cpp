@@ -1,94 +1,76 @@
 #include "MainMenu.h"
 
 MainScene::MainScene()
-	:entManager(EntityManager::getInstance())
-	, sceneManager(SceneManager::getInstance())
-	, assetHandler(AssetHandler::getInstance())
+    : entManager(EntityManager::getInstance())
+    , sceneManager(SceneManager::getInstance())
+    , assetHandler(AssetHandler::getInstance())
 {
-	font = assetHandler.getFont("mainFont");
-	float windowHeight = static_cast<float>(g_Config.game.window.height);
-	float initialButtonY = 350.f;
-	titleText.setFont(font);
-	titleText.setString("ShapeWars");
-	titleText.setCharacterSize(48);
-	titleText.setFillColor(sf::Color::White);
-	titleText.setPosition(50, 50);
+    font = assetHandler.getFont("mainFont");
 
-	singlePlayerplayButton.setSize({ 300, 60 });
-	singlePlayerplayButton.setFillColor(sf::Color::Transparent);
-	singlePlayerplayButton.setOrigin(0, singlePlayerplayButton.getSize().y / 2.f);
-	singlePlayerplayButton.setPosition(50, initialButtonY);
+    // Safety check for window dimensions
+    float width = 1600;
+    float height = 800;
+    if (sceneManager.getRenderWindow()) {
+        width = (float)sceneManager.getRenderWindow()->getSize().x;
+        height = (float)sceneManager.getRenderWindow()->getSize().y;
+    }
 
-	singlePlayerplayText.setFont(font);
-	singlePlayerplayText.setString("Play");
-	singlePlayerplayText.setCharacterSize(28);
-	singlePlayerplayText.setFillColor(sf::Color(128, 128, 128));
-	singlePlayerplayText.setPosition(singlePlayerplayButton.getPosition().x, singlePlayerplayButton.getPosition().y - (singlePlayerplayText.getGlobalBounds().height / 2.f));
+    // 1. Title
+    titleText.setFont(font);
+    titleText.setString("SHAPE WARS");
+    titleText.setCharacterSize(80);
+    titleText.setFillColor(sf::Color::White);
+    titleText.setOutlineColor(sf::Color(0, 100, 100)); // Cyan dark outline
+    titleText.setOutlineThickness(4);
 
-	coopPlayButton.setSize({ 300, 60 });
-	coopPlayButton.setFillColor(sf::Color::Transparent);
-	coopPlayButton.setOrigin(0, coopPlayButton.getSize().y / 2.f);
-	coopPlayButton.setPosition(50, singlePlayerplayButton.getPosition().y + singlePlayerplayButton.getGlobalBounds().height + 30);
+    sf::FloatRect tRect = titleText.getLocalBounds();
+    titleText.setOrigin(tRect.left + tRect.width / 2.0f, tRect.top);
+    titleText.setPosition(width / 2.0f, 100);
 
-	coopPlayText.setFont(font);
-	coopPlayText.setString("COOP");
-	coopPlayText.setCharacterSize(28);
-	coopPlayText.setFillColor(sf::Color(128, 128, 128));
-	coopPlayText.setPosition(coopPlayButton.getPosition().x, coopPlayButton.getPosition().y - (coopPlayButton.getGlobalBounds().height / 2.f));
+    // 2. Buttons
+    float centerX = width / 2.0f;
+    float startY = 350;
+
+    btnSinglePlayer.init(font, "SINGLE PLAYER", { 300, 60 }, { centerX, startY });
+    btnCoop.init(font, "CO-OP LOBBY", { 300, 60 }, { centerX, startY + 80 });
+    btnExit.init(font, "EXIT", { 300, 60 }, { centerX, startY + 160 });
 }
 
 void MainScene::handleEvent(const sf::Event& event)
 {
-	if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
-	{
-		if(isMouseOver(singlePlayerplayButton, *sceneManager.getRenderWindow()))
-		{
-			sceneManager.loadScene(SceneID::SinglePLayer);
-		}
-		else if (isMouseOver(coopPlayButton, *sceneManager.getRenderWindow()))
-		{
-			sceneManager.loadScene(SceneID::CoopLobby);
-		}
-	}
+    sf::RenderWindow* win = sceneManager.getRenderWindow();
+    if (!win) return;
+
+    sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(*win);
+
+    if (btnSinglePlayer.isClicked(event, mousePos)) {
+        sceneManager.loadScene(SceneID::SinglePLayer);
+    }
+    else if (btnCoop.isClicked(event, mousePos)) {
+        sceneManager.loadScene(SceneID::CoopLobby);
+    }
+    else if (btnExit.isClicked(event, mousePos)) {
+        win->close();
+    }
 }
 
 void MainScene::update(float deltaTime)
 {
-	sf::RenderWindow* window = sceneManager.getRenderWindow();
-	if (!window)
-	{
-		return;
-	}
-	if (isMouseOver(singlePlayerplayButton, *window))
-	{
-		singlePlayerplayText.setFillColor(sf::Color::White);
-	}
-	else
-	{
-		singlePlayerplayText.setFillColor(sf::Color(128, 128, 128));
-	}
+    sf::RenderWindow* win = sceneManager.getRenderWindow();
+    if (!win) return;
 
-	if (isMouseOver(coopPlayButton, *window))
-	{
-		coopPlayText.setFillColor(sf::Color::White);
-	}
-	else
-	{
-		coopPlayText.setFillColor(sf::Color(128, 128, 128));
-	}
+    sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(*win);
+
+    // Update hover effects
+    btnSinglePlayer.update(mousePos);
+    btnCoop.update(mousePos);
+    btnExit.update(mousePos);
 }
 
 void MainScene::render(sf::RenderWindow& window)
 {
-	window.draw(titleText);
-	window.draw(singlePlayerplayButton);
-	window.draw(singlePlayerplayText);
-	window.draw(coopPlayButton);
-	window.draw(coopPlayText);
-}
-
-bool MainScene::isMouseOver(const sf::RectangleShape& button, const sf::RenderWindow& window)
-{
-	sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-	return button.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePos));
+    window.draw(titleText);
+    btnSinglePlayer.render(window);
+    btnCoop.render(window);
+    btnExit.render(window);
 }

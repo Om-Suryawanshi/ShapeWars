@@ -18,7 +18,11 @@ SinglePlayerScene::SinglePlayerScene()
 	BackButtonText.setCharacterSize(28);
 	BackButtonText.setPosition(15, BackButton.getSize().y);
 
-	g_ImguiStyle = ImGui::GetStyle();
+
+	if (g_Config.game.system.debugMode)
+	{
+		g_ImguiStyle = ImGui::GetStyle();
+	}
 
 	// Create Player 
 	entManager.createEntity<Player>();
@@ -40,7 +44,10 @@ SinglePlayerScene::SinglePlayerScene()
 
 void SinglePlayerScene::handleEvent(const sf::Event& event)
 {
-	ImGui::SFML::ProcessEvent(event);
+	if (g_Config.game.system.debugMode)
+	{
+		ImGui::SFML::ProcessEvent(event);
+	}
 
 
 	// Mouse Left key press logic
@@ -233,44 +240,48 @@ void SinglePlayerScene::update(float deltaTime)
 
 	scoreText.setString("Score: " + std::to_string(score));
 
-	sf::Time dt = sf::seconds(deltaTime);
-	ImGui::SFML::Update(g_window, dt);
-	ImGui::Begin("Entity Manager");
-	if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
+	if (g_Config.game.system.debugMode)
 	{
-		auto& allEntities = entManager.getAllEnt();
-		for (const auto& [id, ent] : allEntities)
+		sf::Time dt = sf::seconds(deltaTime);
+		ImGui::SFML::Update(g_window, dt);
+		ImGui::Begin("Entity Manager");
+		if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushID(id);
-
-			ImGui::Text("ID: %d", id);
-
-			// Show type
-			std::string typeName = "Unknown";
-			switch (ent->getType())
+			auto& allEntities = entManager.getAllEnt();
+			for (const auto& [id, ent] : allEntities)
 			{
-			case EntityType::Player: typeName = "Player"; break;
-			case EntityType::Enemy: typeName = "Enemy"; break;
-			case EntityType::Bullet: typeName = "Bullet"; break;
-			case EntityType::MiniEnemy: typeName = "MiniEnemy"; break;
-			default: break;
-			}
-			ImGui::SameLine();
-			ImGui::Text("Type: %s", typeName.c_str());
-			ImGui::SameLine();
-			ImGui::Text("(%f, %f)", ent->getPos().x, ent->getPos().y);
+				ImGui::PushID(id);
 
-			// Delete Button
-			ImGui::SameLine();
-			if (ImGui::Button("D"))
-			{
-				ent->die();
-			}
+				ImGui::Text("ID: %d", id);
 
-			ImGui::PopID();
+				// Show type
+				std::string typeName = "Unknown";
+				switch (ent->getType())
+				{
+				case EntityType::Player: typeName = "Player"; break;
+				case EntityType::Enemy: typeName = "Enemy"; break;
+				case EntityType::Bullet: typeName = "Bullet"; break;
+				case EntityType::MiniEnemy: typeName = "MiniEnemy"; break;
+				default: break;
+				}
+				ImGui::SameLine();
+				ImGui::Text("Type: %s", typeName.c_str());
+				ImGui::SameLine();
+				ImGui::Text("(%f, %f)", ent->getPos().x, ent->getPos().y);
+
+				// Delete Button
+				ImGui::SameLine();
+				if (ImGui::Button("D"))
+				{
+					ent->die();
+				}
+
+				ImGui::PopID();
+			}
 		}
+		ImGui::End();
 	}
-	ImGui::End();
+	
 	rewindSystem.update(); // Allways keep rewind before clear or else it will fuck it up
 	g_window.clear();
 	entManager.update(deltaTime);
@@ -282,7 +293,10 @@ void SinglePlayerScene::render(sf::RenderWindow& window)
 	window.draw(BackButton);
 	window.draw(BackButtonText);
 	entManager.draw(window);
-	ImGui::SFML::Render(g_window);
+	if (g_Config.game.system.debugMode)
+	{
+		ImGui::SFML::Render(g_window);
+	}
 }
 
 SinglePlayerScene::~SinglePlayerScene()

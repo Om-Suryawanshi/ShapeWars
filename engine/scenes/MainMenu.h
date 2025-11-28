@@ -12,23 +12,22 @@ class AssetHandler;
 
 class MainScene : public Scene
 {
-private:
-	EntityManager& entManager;
-	SceneManager& sceneManager;
-	AssetHandler& assetHandler;
-
-	sf::Font font;
-	sf::Text titleText;
-	sf::RectangleShape singlePlayerplayButton;
-	sf::Text singlePlayerplayText;
-
-	sf::RectangleShape coopPlayButton;
-	sf::Text coopPlayText;
-
 public:
-	MainScene();
-	void handleEvent(const sf::Event& event);
-	void update(float delatTime);
-	void render(sf::RenderWindow& window);
-	bool isMouseOver(const sf::RectangleShape& button, const sf::RenderWindow& window);
+    MainScene();
+    void handleEvent(const sf::Event& event) override;
+    void update(float deltaTime) override;
+    void render(sf::RenderWindow& window) override;
+
+private:
+    EntityManager& entManager;
+    SceneManager& sceneManager;
+    AssetHandler& assetHandler;
+
+    sf::Font font;
+    sf::Text titleText;
+
+    // modernized buttons
+    ModernButton btnSinglePlayer;
+    ModernButton btnCoop;
+    ModernButton btnExit;
 };

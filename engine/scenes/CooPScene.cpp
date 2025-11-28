@@ -8,7 +8,11 @@ CoopScene::CoopScene()
 	, rewindSystem(entManager, 300)
 {
 	NetworkManager& net = NetworkManager::getInstance();
-	g_ImguiStyle = ImGui::GetStyle();
+
+	if (g_Config.game.system.debugMode)
+	{
+		g_ImguiStyle = ImGui::GetStyle();
+	}
 
 	const int HOST_ID = 1; // Host PLayer id (LocalPlayer)
 	const int CLIENT_ID = 1000000; // Client Player id (RemotePlayer)
@@ -53,7 +57,11 @@ CoopScene::~CoopScene()
 
 void CoopScene::handleEvent(const sf::Event& event)
 {
-	ImGui::SFML::ProcessEvent(event);
+	if (g_Config.game.system.debugMode)
+	{
+		ImGui::SFML::ProcessEvent(event);
+	}
+
 	NetworkManager& net = NetworkManager::getInstance();
 	SceneManager& sceneManager = SceneManager::getInstance();
 
@@ -321,45 +329,47 @@ void CoopScene::update(float deltaTime)
 
 	entManager.update(deltaTime);
 	rewindSystem.update(); // Record history
-
-	sf::Time dt = sf::seconds(deltaTime);
-	ImGui::SFML::Update(*SceneManager::getInstance().getRenderWindow(), dt);
-	ImGui::Begin("Entity Manager");
-	if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
+	if (g_Config.game.system.debugMode)
 	{
-		auto& allEntities = entManager.getAllEnt();
-		for (const auto& [id, ent] : allEntities)
+		sf::Time dt = sf::seconds(deltaTime);
+		ImGui::SFML::Update(*SceneManager::getInstance().getRenderWindow(), dt);
+		ImGui::Begin("Entity Manager");
+		if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushID(id);
-
-			ImGui::Text("ID: %d", id);
-
-			// Show type
-			std::string typeName = "Unknown";
-			switch (ent->getType())
+			auto& allEntities = entManager.getAllEnt();
+			for (const auto& [id, ent] : allEntities)
 			{
-			case EntityType::Player: typeName = "Player"; break;
-			case EntityType::Enemy: typeName = "Enemy"; break;
-			case EntityType::Bullet: typeName = "Bullet"; break;
-			case EntityType::MiniEnemy: typeName = "MiniEnemy"; break;
-			default: break;
-			}
-			ImGui::SameLine();
-			ImGui::Text("Type: %s", typeName.c_str());
-			ImGui::SameLine();
-			ImGui::Text("(%f, %f)", ent->getPos().x, ent->getPos().y);
+				ImGui::PushID(id);
 
-			// Delete Button
-			ImGui::SameLine();
-			if (ImGui::Button("D"))
-			{
-				ent->die();
-			}
+				ImGui::Text("ID: %d", id);
 
-			ImGui::PopID();
+				// Show type
+				std::string typeName = "Unknown";
+				switch (ent->getType())
+				{
+				case EntityType::Player: typeName = "Player"; break;
+				case EntityType::Enemy: typeName = "Enemy"; break;
+				case EntityType::Bullet: typeName = "Bullet"; break;
+				case EntityType::MiniEnemy: typeName = "MiniEnemy"; break;
+				default: break;
+				}
+				ImGui::SameLine();
+				ImGui::Text("Type: %s", typeName.c_str());
+				ImGui::SameLine();
+				ImGui::Text("(%f, %f)", ent->getPos().x, ent->getPos().y);
+
+				// Delete Button
+				ImGui::SameLine();
+				if (ImGui::Button("D"))
+				{
+					ent->die();
+				}
+
+				ImGui::PopID();
+			}
 		}
+		ImGui::End();
 	}
-	ImGui::End();
 	SceneManager::getInstance().getRenderWindow()->clear();
 }
 
@@ -367,7 +377,10 @@ void CoopScene::render(sf::RenderWindow& window)
 {
 	// Crash Prevention: render() handles empty lists safely
 	entManager.draw(window);
-	ImGui::SFML::Render(*SceneManager::getInstance().getRenderWindow());
+	if (g_Config.game.system.debugMode)
+	{
+		ImGui::SFML::Render(*SceneManager::getInstance().getRenderWindow());
+	}
 }
 
 void CoopScene::sendMyPosition()

@@ -1,3 +1,4 @@
+System 0
 Window 1600 800 60 0
 Font assets/fonts/delutchy.ttf 24 255 255 255
 Player 32 32 5 5 5 5 255 0 0 4 8
