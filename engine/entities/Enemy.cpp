@@ -2,7 +2,7 @@
 
 
 Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType, float a)
-	: entity(id,speed,size,sides)
+	: entity(id, speed, size, static_cast<float>(sides))
 	, enemy(size, static_cast<size_t>(sides))	
 	, angle(a)
 {
@@ -26,7 +26,7 @@ Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType, f
 }
 
 Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType)
-	: entity(id, speed, size, sides)
+	: entity(id, speed, size, static_cast<float>(sides))
 	, enemy(size, static_cast<size_t>(sides))
 {
 	isAlive = true;

@@ -21,9 +21,12 @@ enum PacketType {
     JOIN_ACK = 3,
     PLAYER_POS = 4,     // "I am at X,Y"
     SPAWN_ENTITY = 5,   // "Spawn Enemy at X,Y"
-    REWIND_EVENT = 6,   // "Start/Stop Rewinding"
-    WORLD_STATE = 7,    // "Correction data"
-    PAUSE = 8           // true = paused, false = not paused
+    KILL_ENTITY = 6,
+    REWIND_EVENT = 7,   // "Start/Stop Rewinding"
+    REWIND_CLEAR = 8,
+    WORLD_STATE = 9,    // "Correction data"
+    PAUSE = 10,           // true = paused, false = not paused
+    SCORE = 11
 };
 
 struct PacketHeader {
@@ -45,7 +48,6 @@ struct RewindPacket {
     PacketHeader header = { REWIND_EVENT };
     bool isRewinding; // true = start, false = stop
 };
-
 
 struct BulletData
 {
@@ -75,6 +77,18 @@ struct SpawnPacket
     }data;
 };
 
+struct KillEntityPacket
+{
+    PacketHeader header = { KILL_ENTITY };
+    int type;
+    int id;
+};
+
+struct ScorePacket
+{
+    PacketHeader header = { SCORE };
+    int score;
+};
 
 // Simplified Entity State for network sync
 struct EntityState {

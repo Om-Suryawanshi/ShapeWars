@@ -90,3 +90,8 @@ void entity::setColor(sf::Color color)
 {
 
 }
+
+void entity::setId(int _id)
+{
+	id = _id;
+}

@@ -17,6 +17,7 @@ class CoopScene : public Scene
 {
 private:
 	EntityManager& entManager;
+	Collision collision;
 	RewindSystem rewindSystem;
 
 	std::shared_ptr<entity> localPlayer;

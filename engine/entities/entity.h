@@ -41,9 +41,9 @@ public:
 	// Getter
 	EntityType getType() const { return type; }
 	int getId() const { return id; }
+	vec2 getPos() const;
 	float getCollisionRadius() const;
 	bool getisAlive() const;
-	vec2 getPos() const;
 	int getVertices() const;
 	float getSpeed() const;
 	float getSize() const;
@@ -52,6 +52,7 @@ public:
 	vec2 getVelocity() const;
 	// Setter
 	void setType(EntityType type);
+	void setId(int id); // Coop else auto set
 	void setPos(vec2 pos);
 	void setLifetime(float life);
 	void setAge(float a) { age = a; }

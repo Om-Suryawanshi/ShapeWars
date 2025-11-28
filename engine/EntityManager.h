@@ -21,12 +21,34 @@ public:
 	EntityManager();
 	EntityManager(const EntityManager&) = delete;
 	static EntityManager& getInstance();
+
+
+	void setStartId(int start) { nextId = start; }
+
+	// Auto id it gives id automatically uses the next id available
 	template <typename T, typename... Args>
 	std::shared_ptr<T> createEntity(Args&&... args)
 	{
 		auto entity = std::make_shared<T>(nextId, std::forward<Args>(args)...);
 		entities[nextId] = entity;
 		++nextId;
+		return entity;
+	}
+
+
+	// Forced id you give the id when spawnning the ent
+	template <typename T, typename... Args>
+	std::shared_ptr<T> createEntityWithId(int forcedId, Args&&... args)
+	{
+		auto entity = std::make_shared<T>(forcedId, std::forward<Args>(args)...);
+
+		entities[forcedId] = entity;
+
+		// Do not inc the nextid 
+		/*if (forcedId >= nextId) {
+			nextId = forcedId + 1;
+		}*/
+
 		return entity;
 	}
 
