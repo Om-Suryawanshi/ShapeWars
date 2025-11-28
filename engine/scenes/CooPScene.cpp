@@ -413,6 +413,8 @@ void CoopScene::handleNetworking()
 				auto enemy = entManager.getEnt(pkt->id); 
 				if(enemy)
 					enemy->die();
+
+				// Spawn mini Enemy
 			}
 
 			/*if (pkt->type == (int)EntityType::MiniEnemy)
