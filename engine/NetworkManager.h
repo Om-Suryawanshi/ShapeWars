@@ -66,6 +66,15 @@ struct EnemyData
     float angle;
 };
 
+struct MiniEnemyData
+{
+    int id;
+    float x, y;
+    float vx, vy;
+    float radius;
+    int sides;
+};
+
 struct SpawnPacket
 {
     PacketHeader header = { SPAWN_ENTITY };
@@ -74,6 +83,7 @@ struct SpawnPacket
     union {
         BulletData bullet;
         EnemyData enemy;
+        MiniEnemyData miniEnemy;
     }data;
 };
 

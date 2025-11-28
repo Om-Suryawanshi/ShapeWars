@@ -9,19 +9,31 @@ CoopScene::CoopScene()
 {
 	NetworkManager& net = NetworkManager::getInstance();
 	g_ImguiStyle = ImGui::GetStyle();
-	if (net.isHost)
-		entManager.setStartId(1);
-	else
-		entManager.setStartId(1000000); // Client or the remote player starts the ordering after 1000000 so the ids dont mix
 
-	localPlayer = entManager.createEntity<Player>();
-	remotePlayer = entManager.createEntity<Player>(true);
+	const int HOST_ID = 1; // Host PLayer id (LocalPlayer)
+	const int CLIENT_ID = 1000000; // Client Player id (RemotePlayer)
 
-	if (net.isHost) {
+	if (net.isHost) 
+	{
+		// Host Setup
+		entManager.setStartId(2); // Start spawning other stuff at 2
+
+		// Host is Local(1), Client is Remote(1M)
+		localPlayer = entManager.createEntityWithId<Player>(HOST_ID);
+		remotePlayer = entManager.createEntityWithId<Player>(CLIENT_ID, true);
+
 		localPlayer->setPos({ 200.f, 300.f });
 		remotePlayer->setPos({ 400.f, 300.f });
 	}
-	else {
+	else 
+	{
+		// Client Setup
+		entManager.setStartId(1000001); // Start spawning other stuff at 1M+1
+
+		// Client is Local(1M), Host is Remote(1)
+		localPlayer = entManager.createEntityWithId<Player>(CLIENT_ID);
+		remotePlayer = entManager.createEntityWithId<Player>(HOST_ID, true);
+
 		localPlayer->setPos({ 400.f, 300.f });
 		remotePlayer->setPos({ 200.f, 300.f });
 		remotePlayer->setColor(sf::Color(255, 255, 255, 150));
@@ -188,78 +200,108 @@ void CoopScene::update(float deltaTime)
 		}
 	}
 
-	// Collision between bullet and enemy
-	for (auto& bullet : entManager.getByType(EntityType::Bullet))
+	// Collision between bullet and enemy and mini Enemy and only host will calculate that
+	if (net.isHost)
 	{
-		if (!bullet->getisAlive()) continue;
-		for (auto& enemy : entManager.getByType(EntityType::Enemy))
+		for (auto& bullet : entManager.getByType(EntityType::Bullet))
 		{
-			if (!enemy->getisAlive()) continue;
-			if (collision.checkCollision(*bullet, *enemy))
+			if (!bullet->getisAlive()) continue;
+			for (auto& enemy : entManager.getByType(EntityType::Enemy))
 			{
-				// Send pkt to remove the bullet also
-				bullet->die();
-
-				score += enemy->getVertices() * 100;
-				float angleIncrement = 2.0f * PI / enemy->getVertices();
-				// Mini Enemy Spawnner
-				for (int i = 0; i < static_cast<int>(enemy->getVertices()); i++)
+				if (!enemy->getisAlive()) continue;
+				if (collision.checkCollision(*bullet, *enemy)) // Only host checks collision and sends it to client so he can do that
 				{
-					float angle = i * angleIncrement;
-					vec2 dir(std::cos(angle), std::sin(angle));
+					// Bullet remove pkt
+					KillEntityPacket BulletKillPkt;
+					BulletKillPkt.type = (int)EntityType::Bullet;
+					BulletKillPkt.id = bullet->getId();
+					net.sendPacket(&BulletKillPkt, sizeof(BulletKillPkt));
+					bullet->die();
 
-					// Spawn
-					std::shared_ptr<entity> miniEnemy_base = entManager.createEntity<Enemy>(enemy->getSpeed(), enemy->getSize() / 2, static_cast<float>(enemy->getVertices()), EntityType::MiniEnemy);
-					std::shared_ptr<Enemy> miniEnemy = std::dynamic_pointer_cast<Enemy>(miniEnemy_base);
-					miniEnemy->setPos(enemy->getPos());
-					miniEnemy->setVelocity(dir* (enemy->getSpeed()));
-					miniEnemy->setLifetime(10);
-				}
+					score += enemy->getVertices() * 100;
+					ScorePacket scrPkt;
+					scrPkt.score = score;
+					net.sendPacket(&scrPkt, sizeof(scrPkt));
 
-				KillEntityPacket pkt;
-				pkt.type = (int)EntityType::Enemy;
-				pkt.id = enemy->getId();
-				net.sendPacket(&pkt, sizeof(pkt));
-				enemy->die();
-				break;
-			}
-		}
+					float angleIncrement = 2.0f * PI / enemy->getVertices();
 
-		// MiniEnemy and bullet
-		for (auto& miniEnemy : entManager.getByType(EntityType::MiniEnemy))
-		{
-			if (!miniEnemy->getisAlive()) continue;
-			if (collision.checkCollision(*bullet, *miniEnemy))
-			{
-				if (net.isHost)
-				{
-					score += miniEnemy->getVertices() * 300;
-					ScorePacket pkt;
-					pkt.score = score;
+					// MiniEnemy Spawnner loop through sides
+					for (int i = 0; i < static_cast<int>(enemy->getVertices()); i++)
+					{
+						float angle = i * angleIncrement;
+						vec2 dir(std::cos(angle), std::sin(angle));
+
+						// 1. Host creates entity locally (uses nextId, e.g., 50)
+						auto miniEntBase = entManager.createEntity<Enemy>(
+							enemy->getSpeed(),
+							enemy->getSize() / 2,
+							static_cast<float>(enemy->getVertices()),
+							EntityType::MiniEnemy
+						);
+
+						auto miniEnemy = std::dynamic_pointer_cast<Enemy>(miniEntBase);
+						miniEnemy->setPos(enemy->getPos());
+						miniEnemy->setVelocity(dir * (enemy->getSpeed()));
+						miniEnemy->setLifetime(10);
+
+						SpawnPacket spawnPkt;
+						spawnPkt.header.type = SPAWN_ENTITY;
+						spawnPkt.type = (int)EntityType::MiniEnemy;
+
+						spawnPkt.data.miniEnemy.id = miniEnemy->getId();
+						spawnPkt.data.miniEnemy.x = miniEnemy->getPos().x;
+						spawnPkt.data.miniEnemy.y = miniEnemy->getPos().y;
+
+						spawnPkt.data.miniEnemy.vx = miniEnemy->getVelocity().x;
+						spawnPkt.data.miniEnemy.vy = miniEnemy->getVelocity().y;
+
+						spawnPkt.data.enemy.radius = miniEnemy->getSize();
+						spawnPkt.data.enemy.sides = miniEnemy->getVertices();
+
+						net.sendPacket(&spawnPkt, sizeof(spawnPkt));
+					}
+
+					KillEntityPacket pkt;
+					pkt.type = (int)EntityType::Enemy;
+					pkt.id = enemy->getId();
 					net.sendPacket(&pkt, sizeof(pkt));
+					enemy->die();
+					break;
 				}
 
-				KillEntityPacket MiniEnemypkt;
-				MiniEnemypkt.type = (int)EntityType::MiniEnemy;
-				MiniEnemypkt.id = miniEnemy->getId();
-				net.sendPacket(&MiniEnemypkt, sizeof(MiniEnemypkt));
+				// MiniEnemy and bullet
+				for (auto& miniEnemy : entManager.getByType(EntityType::MiniEnemy))
+				{
+					if (!miniEnemy->getisAlive()) continue;
+					if (collision.checkCollision(*bullet, *miniEnemy))
+					{
+						if (net.isHost)
+						{
+							score += miniEnemy->getVertices() * 300;
+							ScorePacket pkt;
+							pkt.score = score;
+							net.sendPacket(&pkt, sizeof(pkt));
+						}
 
-				KillEntityPacket BulletPkt;
-				BulletPkt.type = (int)EntityType::Bullet;
-				BulletPkt.id = bullet->getId();
-				net.sendPacket(&BulletPkt, sizeof(BulletPkt));
+						KillEntityPacket MiniEnemypkt;
+						MiniEnemypkt.type = (int)EntityType::MiniEnemy;
+						MiniEnemypkt.id = miniEnemy->getId();
+						net.sendPacket(&MiniEnemypkt, sizeof(MiniEnemypkt));
 
-				bullet->die();
-				miniEnemy->die();
-				break;
+						KillEntityPacket BulletPkt;
+						BulletPkt.type = (int)EntityType::Bullet;
+						BulletPkt.id = bullet->getId();
+						net.sendPacket(&BulletPkt, sizeof(BulletPkt));
+
+						bullet->die();
+						miniEnemy->die();
+						break;
+					}
+				}
 			}
 		}
-
-
 	}
 
-	entManager.update(deltaTime);
-	rewindSystem.update(); // Record history
 
 	// 5. SEND MY POSITION (e.g. 60 times a sec or less)
 	if (networkTick.getElapsedTime().asMilliseconds() > 15) {
@@ -274,6 +316,10 @@ void CoopScene::update(float deltaTime)
 		// (Code omitted for brevity, logic same as before)
 		worldSyncTick.restart();
 	}
+
+
+	entManager.update(deltaTime);
+	rewindSystem.update(); // Record history
 
 	sf::Time dt = sf::seconds(deltaTime);
 	ImGui::SFML::Update(*SceneManager::getInstance().getRenderWindow(), dt);
@@ -392,6 +438,21 @@ void CoopScene::handleNetworking()
 				auto entity = entManager.createEntityWithId<Enemy>(pkt->data.enemy.id, pkt->data.enemy.speed, pkt->data.enemy.radius, pkt->data.enemy.sides, EntityType::Enemy, pkt->data.enemy.angle);
 				entity->setPos(vec2(pkt->data.enemy.x, pkt->data.enemy.y));
 			}
+
+			if (pkt->type == (int)EntityType::MiniEnemy)
+			{
+				vec2 dir(std::cos(pkt->data.enemy.angle), std::sin(pkt->data.enemy.angle));
+				auto entity = entManager.createEntityWithId<Enemy>(
+					pkt->data.miniEnemy.id,
+					0, // Speed is irrelevant we set valocity manually
+					pkt->data.miniEnemy.radius,
+					pkt->data.miniEnemy.sides,
+					EntityType::MiniEnemy,
+					0 // Angle is irrelevant bcz velocuty determines direction
+				);
+				entity->setPos(vec2(pkt->data.miniEnemy.x, pkt->data.miniEnemy.y));
+				entity->setVelocity(vec2(pkt->data.miniEnemy.vx, pkt->data.miniEnemy.vy));
+			}
 		}
 
 		if (h->type == KILL_ENTITY)
@@ -409,12 +470,11 @@ void CoopScene::handleNetworking()
 
 			if (pkt->type == (int)EntityType::Enemy)
 			{
-				std::cerr << pkt->id << std::endl;
+				//std::cerr << pkt->id << std::endl;
 				auto enemy = entManager.getEnt(pkt->id); 
-				if(enemy)
+				if (enemy)
 					enemy->die();
 
-				// Spawn mini Enemy
 			}
 
 			/*if (pkt->type == (int)EntityType::MiniEnemy)
