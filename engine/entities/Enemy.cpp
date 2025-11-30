@@ -1,7 +1,7 @@
 #include "Enemy.h"
 
 
-Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType, float a)
+Enemy::Enemy(int id, float speed, float size, float sides, EntityType enemyType, float a)
 	: entity(id, speed, size, static_cast<float>(sides))
 	, enemy(size, static_cast<size_t>(sides))	
 	, angle(a)
@@ -25,7 +25,7 @@ Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType, f
 	enemy.setOutlineThickness(static_cast<float>(g_Config.game.enemy.outlineThickness));
 }
 
-Enemy::Enemy(int id, float speed, float size, int sides, EntityType enemyType)
+Enemy::Enemy(int id, float speed, float size, float sides, EntityType enemyType)
 	: entity(id, speed, size, static_cast<float>(sides))
 	, enemy(size, static_cast<size_t>(sides))
 {

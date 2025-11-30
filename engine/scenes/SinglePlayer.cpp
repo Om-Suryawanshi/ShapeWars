@@ -141,7 +141,7 @@ void SinglePlayerScene::update(float deltaTime)
 				float angle = static_cast<float>((rand() % 360) * PI / 180.0f); // degrees to radians
 
 
-				auto newEnemy = entManager.createEntity<Enemy>(randomSpeed, enemyRadius, randomSides, EntityType::Enemy, angle);
+				auto newEnemy = entManager.createEntity<Enemy>(randomSpeed, enemyRadius, static_cast<float>(randomSides), EntityType::Enemy, angle);
 				newEnemy->setPos(spawnPos);
 			}
 		}

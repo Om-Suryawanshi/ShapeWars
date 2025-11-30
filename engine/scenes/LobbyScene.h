@@ -30,7 +30,6 @@ private:
     SceneManager& sceneManager; // Added reference
     sf::Font font;
 
-    // --- Networking State (YOUR ORIGINAL LOGIC) ---
     bool isHosting = false;
     bool isSearching = false;
     std::string myIP;
@@ -53,7 +52,6 @@ private:
     bool updateClientLogic(float dt);
     void initUI();
 
-    // --- UI Elements (Modernized) ---
     sf::Text titleText;
     sf::Text statusText;
 

@@ -161,7 +161,7 @@ void CoopScene::update(float deltaTime)
 
 					float angle = static_cast<float>((rand() % 360) * PI / 180.0f); // degrees to radians
 
-					auto newEnemy = entManager.createEntity<Enemy>(randomSpeed, enemyRadius, randomSides, EntityType::Enemy, angle);
+					auto newEnemy = entManager.createEntity<Enemy>(randomSpeed, enemyRadius, static_cast<float>(randomSides), EntityType::Enemy, angle);
 					newEnemy->setPos(spawnPos);
 
 					SpawnPacket pkt;
@@ -463,7 +463,7 @@ void CoopScene::handleNetworking()
 					pkt->data.enemy.id, 
 					pkt->data.enemy.speed, 
 					pkt->data.enemy.radius, 
-					pkt->data.enemy.sides, 
+					static_cast<float>(pkt->data.enemy.sides),
 					EntityType::Enemy, 
 					pkt->data.enemy.angle
 				);
@@ -474,11 +474,11 @@ void CoopScene::handleNetworking()
 			{
 				auto entity = entManager.createEntityWithId<Enemy>(
 					pkt->data.miniEnemy.id,
-					0, // Speed is irrelevant we set valocity manually
+					0.f, // Speed is irrelevant we set valocity manually
 					pkt->data.miniEnemy.radius,
-					pkt->data.miniEnemy.sides,
+					static_cast<float>(pkt->data.miniEnemy.sides),
 					EntityType::MiniEnemy,
-					0 // Angle is irrelevant bcz velocuty determines direction
+					0.f // Angle is irrelevant bcz velocuty determines direction
 				);
 				entity->setPos(vec2(pkt->data.miniEnemy.x, pkt->data.miniEnemy.y));
 				entity->setVelocity(vec2(pkt->data.miniEnemy.vx, pkt->data.miniEnemy.vy));
