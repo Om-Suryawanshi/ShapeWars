@@ -13,7 +13,6 @@
 // We use 'push' and 'pop' to ensure data is sent byte-by-byte without padding
 #pragma pack(push, 1) 
 
-// Renamed INPUT to PKT_INPUT to fix conflict with Windows API
 enum PacketType {
     SEARCH_REQ = 0,     // Client asks: "Any hosts?"
     SEARCH_RES = 1,     // Host replies: "I am here!"
@@ -131,5 +130,5 @@ public:
     std::string getLocalIP();
 
 private:
-    NetworkManager() {} // Private constructor for Singleton
+    NetworkManager() {}
 };

@@ -8,6 +8,15 @@ CoopScene::CoopScene()
 	, rewindSystem(entManager, 300)
 {
 	NetworkManager& net = NetworkManager::getInstance();
+	font = AssetHandler::getInstance().getFont("mainFont");
+	BackButton.setSize({ 300, 60 });
+	BackButton.setFillColor(sf::Color::Transparent);
+	BackButton.setOrigin(0, BackButton.getSize().y / 2.f);
+	BackButton.setPosition(50, 50.f);
+	BackButtonText.setFont(font);
+	BackButtonText.setString("BACK");
+	BackButtonText.setCharacterSize(28);
+	BackButtonText.setPosition(15, BackButton.getSize().y);
 
 	if (g_Config.game.system.debugMode)
 	{
@@ -47,6 +56,16 @@ CoopScene::CoopScene()
 	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / g_Config.game.window.frameLimit);
 
 	// Score Setup
+	scoreText.setFont(font);
+	scoreText.setCharacterSize(g_Config.game.font.size);
+	scoreText.setFillColor(sf::Color(
+		g_Config.game.font.r,
+		g_Config.game.font.g,
+		g_Config.game.font.b
+	));
+
+	scoreText.setPosition(10.f, 10.f);
+	scoreText.setString("Score: 0");
 }
 
 CoopScene::~CoopScene()
@@ -65,6 +84,7 @@ void CoopScene::handleEvent(const sf::Event& event)
 	NetworkManager& net = NetworkManager::getInstance();
 	SceneManager& sceneManager = SceneManager::getInstance();
 
+	// Pause
 	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P && !rewindSystem.isRewinding())
 	{
 		PausePacket pkt;
@@ -74,6 +94,8 @@ void CoopScene::handleEvent(const sf::Event& event)
 		entManager.pauseEnt();
 	}
 
+
+	// Rewind
 	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R && !rewindSystem.isRewinding() && !isPaused)
 	{
 		RewindPacket pkt;
@@ -205,6 +227,10 @@ void CoopScene::update(float deltaTime)
 			localPlayer = entManager.createEntity<Player>();
 			localPlayer->setPos({ 200.f, 300.f });
 			score -= enemy->getVertices() * 1000;
+			// Send Score Packet
+			ScorePacket scrpkt;
+			scrpkt.score = score;
+			net.sendPacket(&scrpkt, sizeof(scrpkt));
 		}
 	}
 
@@ -310,6 +336,8 @@ void CoopScene::update(float deltaTime)
 		}
 	}
 
+	scoreText.setString("Score: " + std::to_string(score));
+
 
 	// 5. SEND MY POSITION (e.g. 60 times a sec or less)
 	if (networkTick.getElapsedTime().asMilliseconds() > 15) {
@@ -375,8 +403,10 @@ void CoopScene::update(float deltaTime)
 
 void CoopScene::render(sf::RenderWindow& window)
 {
-	// Crash Prevention: render() handles empty lists safely
 	entManager.draw(window);
+	window.draw(scoreText);
+	window.draw(BackButton);
+	window.draw(BackButtonText);
 	if (g_Config.game.system.debugMode)
 	{
 		ImGui::SFML::Render(*SceneManager::getInstance().getRenderWindow());

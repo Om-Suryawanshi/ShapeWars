@@ -27,6 +27,12 @@ private:
 	sf::Clock worldSyncTick; // For Host to send Enemy corrections
 	ImGuiStyle g_ImguiStyle;
 
+	sf::Font font;
+	sf::Text scoreText;
+
+	sf::Text BackButtonText;
+	sf::RectangleShape BackButton;
+
 	bool isPaused = false;
 	// Enemy setup
 	int enemySpawnIntervalMs;
