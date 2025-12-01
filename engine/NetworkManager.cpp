@@ -11,6 +11,13 @@ void NetworkManager::init()
 	reset();
 }
 
+double getTime()
+{
+	using namespace std::chrono;
+	return duration<double>(high_resolution_clock::now().time_since_epoch()).count();
+}
+
+
 void NetworkManager::startHosting(int port, const std::string& interfaceIP)
 {
 	reset();
@@ -55,7 +62,13 @@ void NetworkManager::sendSearchReq()
 void NetworkManager::sendPacket(void* data, int size)
 {
 	if (connected || destAddr.sin_port != 0)
-		sendto(sock, (char*)data, size, 0, (sockaddr*)&destAddr, sizeof(destAddr));
+	{
+		PacketHeader* h = (PacketHeader*)data;
+		h->sequenceID = ++localSequence;
+		int sentBytes = sendto(sock, (char*)data, size, 0, (sockaddr*)&destAddr, sizeof(destAddr));
+		if (sentBytes > 0) bytesSentAccumulator += sentBytes;
+		packetsSent++;
+	}
 }
 
 void NetworkManager::sendTo(void* data, int size, sockaddr_in& target) {
@@ -65,7 +78,11 @@ void NetworkManager::sendTo(void* data, int size, sockaddr_in& target) {
 int NetworkManager::receivePacket(char* buffer, int size, sockaddr_in& sender)
 {
 	int len = sizeof(sender);
-	return recvfrom(sock, buffer, size, 0, (sockaddr*)&sender, &len);
+	int bytes =  recvfrom(sock, buffer, size, 0, (sockaddr*)&sender, &len);
+	if (bytes > 0) {
+		bytesRecvAccumulator += bytes;
+	}
+	return bytes;
 }
 
 void NetworkManager::reset()

@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <chrono>
 
 // Link library
 #pragma comment(lib, "ws2_32.lib")
@@ -13,7 +14,8 @@
 // We use 'push' and 'pop' to ensure data is sent byte-by-byte without padding
 #pragma pack(push, 1) 
 
-enum PacketType {
+enum PacketType 
+{
     SEARCH_REQ = 0,     // Client asks: "Any hosts?"
     SEARCH_RES = 1,     // Host replies: "I am here!"
     JOIN_REQ = 2,
@@ -25,25 +27,39 @@ enum PacketType {
     REWIND_CLEAR = 8,
     WORLD_STATE = 9,    // "Correction data"
     PAUSE = 10,           // true = paused, false = not paused
-    SCORE = 11
+    SCORE = 11,
+    PING = 12,
+    PONG = 13
 };
 
-struct PacketHeader {
+struct PacketHeader 
+{
     int type;
+    unsigned int sequenceID;
 };
 
-struct PausePacket {
+
+struct PingPacket 
+{
+    PacketHeader header;
+    double timestamp;
+};
+
+struct PausePacket 
+{
     PacketHeader header = { PAUSE };
     bool newPauseState; // true = paused, false = unpaused
 };
 
-struct PlayerPosPacket {
+struct PlayerPosPacket 
+{
     PacketHeader header = { PLAYER_POS };
     float x, y;
     float vx, vy;
 };
 
-struct RewindPacket {
+struct RewindPacket 
+{
     PacketHeader header = { REWIND_EVENT };
     bool isRewinding; // true = start, false = stop
 };
@@ -100,7 +116,8 @@ struct ScorePacket
 };
 
 // Simplified Entity State for network sync
-struct EntityState {
+struct EntityState 
+{
     int id;
     int type;
     float x, y;
@@ -118,6 +135,11 @@ public:
     bool connected = false;
     bool isHost = false;
 
+    float rtt = 0.0f;
+    float packetLoss = 0.0f;
+    float downloadRate = 0.0f;
+    float uploadRate = 0.0f;
+
     void init();
     void startHosting(int port, const std::string& interfaceIP);
     void startClient(int port, const std::string& interfaceIP);
@@ -129,6 +151,23 @@ public:
     void reset();
     std::string getLocalIP();
 
+    // Debug
+    void updateDebug();
+    void sendPingPacket();
+
 private:
+    unsigned int localSequence = 0; // My outgoing sequence id
+    unsigned int remoteSequence = 0; // Last recived sequence id
+
+    // PacketLoss Logic
+    int packetsRecivedstart = 0;
+    int packetsExpectedstart = 0;
+    std::chrono::time_point<std::chrono::steady_clock> lastTimeStatus;
+
+    // BandWidth Logic
+    int bytesSentAccumulator = 0;
+    int bytesRecvAccumulator = 0;
+
+    int packetsSent = 0;
     NetworkManager() {}
 };

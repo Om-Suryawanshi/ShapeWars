@@ -8,11 +8,8 @@ GameManager::GameManager()
 	,assetHandler(AssetHandler::getInstance())
 	,sceneManager(SceneManager::getInstance())
 {
-	if (g_Config.readConfig("CONFIG.txt"))
-	{
-		assetHandler.loadFont("mainFont", g_Config.game.font.path);
-		init();
-	}
+	assetHandler.loadFont("mainFont", g_Config.game.font.path);
+	init();
 }
 
 void GameManager::init()
