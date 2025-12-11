@@ -133,3 +133,70 @@ std::string NetworkManager::getLocalIP()
 	freeaddrinfo(info);
 	return std::string(ipStr);
 }
+
+bool NetworkManager::processDebugPacket(void* packetData)
+{
+	PacketHeader* h = (PacketHeader*)packetData;
+
+	if (h->sequenceID > remoteSequence)
+	{
+		packetsRecivedstart++;
+		remoteSequence = h->sequenceID;
+	}
+
+	if (h->type == PING)
+	{
+		PingPacket* incoming = (PingPacket*)packetData;
+
+		PingPacket pongPkt;
+		pongPkt.header.type = PONG;
+		pongPkt.header.sequenceID = ++localSequence;
+		pongPkt.timestamp = incoming->timestamp;
+
+		sendPacket(&pongPkt, sizeof(pongPkt));
+		return true;
+	}
+	else if (h->type == PONG)
+	{
+		PingPacket* pkt = (PingPacket*)packetData;
+		double now = getTime();
+
+		rtt = (float)((now - pkt->timestamp) * 1000.0);
+
+		return true;
+	}
+	return false;
+}
+
+void NetworkManager::updateDebug()
+{
+	using namespace std::chrono;
+	auto now = steady_clock::now();
+
+	if (duration_cast<milliseconds>(now - lastTimeStatus).count() >= 1000)
+	{
+		uploadRate = (float)bytesSentAccumulator / 1024.0f;
+		downloadRate = (float)bytesRecvAccumulator / 1024.0f;
+
+		if (packetsSent > 0)
+		{
+			// A simple approximation for now:
+			// (make this more complex later with ACK bits)
+		}
+
+		bytesSentAccumulator = 0;
+		bytesRecvAccumulator = 0;
+		packetsRecivedstart = 0;
+		lastTimeStatus = now;
+
+		sendPingPacket();
+	}
+}
+
+void NetworkManager::sendPingPacket()
+{
+	PingPacket pkt;
+	pkt.header.type = PING;
+	pkt.timestamp = getTime();
+	sendPacket(&pkt, sizeof(pkt));
+}

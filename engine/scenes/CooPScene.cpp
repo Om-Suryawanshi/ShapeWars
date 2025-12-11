@@ -134,6 +134,7 @@ void CoopScene::handleEvent(const sf::Event& event)
 void CoopScene::update(float deltaTime)
 {
 	NetworkManager& net = NetworkManager::getInstance();
+	NetworkManager::getInstance().updateDebug();
 	handleNetworking();
 
 	if (isPaused) return;
@@ -354,13 +355,14 @@ void CoopScene::update(float deltaTime)
 		worldSyncTick.restart();
 	}
 
-
 	entManager.update(deltaTime);
 	rewindSystem.update(); // Record history
 	if (g_Config.game.system.debugMode)
 	{
 		sf::Time dt = sf::seconds(deltaTime);
 		ImGui::SFML::Update(*SceneManager::getInstance().getRenderWindow(), dt);
+
+		// --- WINDOW 1: ENTITY MANAGER (Your Old Block) ---
 		ImGui::Begin("Entity Manager");
 		if (ImGui::CollapsingHeader("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -368,13 +370,10 @@ void CoopScene::update(float deltaTime)
 			for (const auto& [id, ent] : allEntities)
 			{
 				ImGui::PushID(id);
-
 				ImGui::Text("ID: %d", id);
 
-				// Show type
 				std::string typeName = "Unknown";
-				switch (ent->getType())
-				{
+				switch (ent->getType()) {
 				case EntityType::Player: typeName = "Player"; break;
 				case EntityType::Enemy: typeName = "Enemy"; break;
 				case EntityType::Bullet: typeName = "Bullet"; break;
@@ -384,18 +383,40 @@ void CoopScene::update(float deltaTime)
 				ImGui::SameLine();
 				ImGui::Text("Type: %s", typeName.c_str());
 				ImGui::SameLine();
-				ImGui::Text("(%f, %f)", ent->getPos().x, ent->getPos().y);
+				ImGui::Text("(%.1f, %.1f)", ent->getPos().x, ent->getPos().y);
 
-				// Delete Button
 				ImGui::SameLine();
-				if (ImGui::Button("D"))
-				{
+				if (ImGui::Button("D")) {
 					ent->die();
 				}
-
 				ImGui::PopID();
 			}
 		}
+		ImGui::End();
+
+		NetworkManager& net = NetworkManager::getInstance();
+
+		ImGui::Begin("Network Stats");
+
+		ImGui::Text("My IP: %s", net.getLocalIP().c_str());
+
+		ImGui::Separator();
+
+		ImVec4 pingColor = ImVec4(0, 1, 0, 1);
+		if (net.rtt > 60) pingColor = ImVec4(1, 1, 0, 1);
+		if (net.rtt > 150) pingColor = ImVec4(1, 0, 0, 1);
+
+		ImGui::TextColored(pingColor, "Ping (RTT): %.1f ms", net.rtt);
+
+		// 3. Bandwidth
+		ImGui::Text("Upload:   %.2f KB/s", net.uploadRate);
+		ImGui::Text("Download: %.2f KB/s", net.downloadRate);
+
+		ImGui::Separator();
+
+		// 4. Packet Loss (Optional, if you implemented the logic)
+		// ImGui::Text("Packets Sent: %d", net.packetsSent); // You'd need to make packetsSent public
+
 		ImGui::End();
 	}
 	SceneManager::getInstance().getRenderWindow()->clear();
@@ -436,6 +457,11 @@ void CoopScene::handleNetworking()
 	{
 		int bytes = net.receivePacket(buffer, 4096, sender);
 		if (bytes < 0) break;
+
+		if (net.processDebugPacket(buffer))
+		{
+			continue;
+		}
 
 		PacketHeader* h = (PacketHeader*)buffer;
 

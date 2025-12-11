@@ -154,6 +154,7 @@ public:
     // Debug
     void updateDebug();
     void sendPingPacket();
+    bool processDebugPacket(void* packetData);
 
 private:
     unsigned int localSequence = 0; // My outgoing sequence id
