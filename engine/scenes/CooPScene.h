@@ -51,7 +51,7 @@ private:
 
 	void handleNetworking();
 	void sendMyPosition();
-	void syncEntity(const EntityState& state);
+	//void syncEntity(const EntityState& state);
 
 public:
 	CoopScene();

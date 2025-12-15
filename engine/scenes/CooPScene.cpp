@@ -1,7 +1,7 @@
 #include "CoopScene.h"
 #include <iostream>
 #include <vector>
-#include <cstring> // for memcpy
+#include <cstring> 
 
 CoopScene::CoopScene()
 	: entManager(EntityManager::getInstance())
@@ -89,7 +89,7 @@ void CoopScene::handleEvent(const sf::Event& event)
 	{
 		PausePacket pkt;
 		pkt.newPauseState = !isPaused;
-		net.sendPacket(&pkt, sizeof(pkt));
+		net.sendReliable(&pkt, sizeof(pkt));
 		isPaused = !isPaused;
 		entManager.pauseEnt();
 	}
@@ -100,7 +100,7 @@ void CoopScene::handleEvent(const sf::Event& event)
 	{
 		RewindPacket pkt;
 		pkt.isRewinding = true;
-		net.sendPacket(&pkt, sizeof(pkt));
+		net.sendReliable(&pkt, sizeof(pkt));
 		rewindSystem.triggerRewind();
 	}
 
@@ -135,8 +135,9 @@ void CoopScene::update(float deltaTime)
 {
 	localTick++;
 	NetworkManager& net = NetworkManager::getInstance();
-	NetworkManager::getInstance().updateDebug();
-	handleNetworking();
+	net.update(); // Resends lost reliable pkts
+	net.updateStats(); // Updates ping pkt loss
+	handleNetworking(); // Checks incomming pkts
 
 	if (isPaused) return;
 
@@ -199,7 +200,7 @@ void CoopScene::update(float deltaTime)
 					pkt.data.enemy.sides = randomSides;
 					pkt.data.enemy.angle = angle;
 
-					net.sendPacket(&pkt, sizeof(pkt));
+					net.sendReliable(&pkt, sizeof(pkt)); // Spawn pkt is needs to reliable
 				}
 			}
 			enemySpawnClock.restart();
@@ -216,23 +217,28 @@ void CoopScene::update(float deltaTime)
 			pkt.header.type = REWIND_CLEAR;
 			pkt.isRewinding = false;
 			net.sendPacket(&pkt, sizeof(pkt)); // Send Packet to clear history of rewind
+
+
 			KillEntityPacket Playerkillpkt;
 			Playerkillpkt.type = (int)EntityType::Player;
-			net.sendPacket(&Playerkillpkt, sizeof(Playerkillpkt)); // Send packet to kill the localPlayer on remoteClient
+			net.sendReliable(&Playerkillpkt, sizeof(Playerkillpkt)); // Send packet to kill the localPlayer on remoteClient
 			localPlayer->die();
+
+
 			KillEntityPacket enemyKillPacket;
 			enemyKillPacket.type = (int)EntityType::Enemy;
 			enemyKillPacket.id = enemy->getId();
-			net.sendPacket(&enemyKillPacket, sizeof(enemyKillPacket)); // send the packet to which we colided and with
+			net.sendReliable(&enemyKillPacket, sizeof(enemyKillPacket)); // send the packet to which we colided and with
 			enemy->die();
 			rewindSystem.clearHistory();
 			localPlayer = entManager.createEntity<Player>();
 			localPlayer->setPos({ 200.f, 300.f });
 			score -= enemy->getVertices() * 1000;
+
 			// Send Score Packet
 			ScorePacket scrpkt;
 			scrpkt.score = score;
-			net.sendPacket(&scrpkt, sizeof(scrpkt));
+			net.sendReliable(&scrpkt, sizeof(scrpkt));
 		}
 	}
 
@@ -255,9 +261,10 @@ void CoopScene::update(float deltaTime)
 					bullet->die();
 
 					score += enemy->getVertices() * 100;
+
 					ScorePacket scrPkt;
 					scrPkt.score = score;
-					net.sendPacket(&scrPkt, sizeof(scrPkt));
+					net.sendReliable(&scrPkt, sizeof(scrPkt));
 
 					float angleIncrement = 2.0f * PI / enemy->getVertices();
 
@@ -294,13 +301,13 @@ void CoopScene::update(float deltaTime)
 						spawnPkt.data.miniEnemy.radius = miniEnemy->getSize();
 						spawnPkt.data.miniEnemy.sides = miniEnemy->getVertices();
 
-						net.sendPacket(&spawnPkt, sizeof(spawnPkt));
+						net.sendReliable(&spawnPkt, sizeof(spawnPkt));
 					}
 
 					KillEntityPacket pkt;
 					pkt.type = (int)EntityType::Enemy;
 					pkt.id = enemy->getId();
-					net.sendPacket(&pkt, sizeof(pkt));
+					net.sendReliable(&pkt, sizeof(pkt));
 					enemy->die();
 					break;
 				}
@@ -322,12 +329,12 @@ void CoopScene::update(float deltaTime)
 						KillEntityPacket MiniEnemypkt;
 						MiniEnemypkt.type = (int)EntityType::MiniEnemy;
 						MiniEnemypkt.id = miniEnemy->getId();
-						net.sendPacket(&MiniEnemypkt, sizeof(MiniEnemypkt));
+						net.sendReliable(&MiniEnemypkt, sizeof(MiniEnemypkt));
 
 						KillEntityPacket BulletPkt;
 						BulletPkt.type = (int)EntityType::Bullet;
 						BulletPkt.id = bullet->getId();
-						net.sendPacket(&BulletPkt, sizeof(BulletPkt));
+						net.sendReliable(&BulletPkt, sizeof(BulletPkt));
 
 						bullet->die();
 						miniEnemy->die();
@@ -341,18 +348,39 @@ void CoopScene::update(float deltaTime)
 	scoreText.setString("Score: " + std::to_string(score));
 
 
-	// 5. SEND MY POSITION (e.g. 60 times a sec or less)
+	// SEND MY POSITION (e.g. 60 times a sec or less)
 	if (networkTick.getElapsedTime().asMilliseconds() > 15) {
 		sendMyPosition();
 		networkTick.restart();
 	}
 
-	// Later implementation first bug fix
-	// 6. HOST: SEND CORRECTIONS (e.g. 10 times a sec) 
-	// Prevents "Drift"
-	if (net.isHost && worldSyncTick.getElapsedTime().asMilliseconds() > 100) {
-		// Send WORLD_STATE packet containing Enemy positions only
-		// (Code omitted for brevity, logic same as before)
+	// HOST: SEND CORRECTIONS 
+	if (!rewindSystem.isRewinding() && net.isHost && worldSyncTick.getElapsedTime().asMilliseconds() > 100) {
+		WorldStatePacket pkt;
+		pkt.enemyCount = 0;
+		auto enemies = entManager.getByType(EntityType::Enemy);
+
+		for (auto& ent : enemies) {
+			if (!ent->getisAlive()) continue;
+
+			// 2. Add them to the packet
+			if (pkt.enemyCount < 64) {
+				pkt.enemies[pkt.enemyCount].id = ent->getId();
+				pkt.enemies[pkt.enemyCount].x = ent->getPos().x;
+				pkt.enemies[pkt.enemyCount].y = ent->getPos().y;
+
+				// Cast to Enemy to get velocity if needed, or just send 0 if not used yet
+				pkt.enemies[pkt.enemyCount].vx = ent->getVelocity().x;
+				pkt.enemies[pkt.enemyCount].vy = ent->getVelocity().y;
+
+				pkt.enemyCount++;
+			}
+		}
+
+		if (pkt.enemyCount > 0) {
+			net.sendPacket(&pkt, sizeof(pkt));
+		}
+
 		worldSyncTick.restart();
 	}
 
@@ -403,20 +431,30 @@ void CoopScene::update(float deltaTime)
 
 		ImGui::Separator();
 
-		ImVec4 pingColor = ImVec4(0, 1, 0, 1);
-		if (net.rtt > 60) pingColor = ImVec4(1, 1, 0, 1);
-		if (net.rtt > 150) pingColor = ImVec4(1, 0, 0, 1);
+		// --- Ping (RTT) ---
+		ImVec4 pingColor = ImVec4(0, 1, 0, 1); // Green
+		if (net.rtt > 60) pingColor = ImVec4(1, 1, 0, 1); // Yellow
+		if (net.rtt > 150) pingColor = ImVec4(1, 0, 0, 1); // Red
 
 		ImGui::TextColored(pingColor, "Ping (RTT): %.1f ms", net.rtt);
 
-		// 3. Bandwidth
+		// --- Bandwidth ---
 		ImGui::Text("Upload:   %.2f KB/s", net.uploadRate);
 		ImGui::Text("Download: %.2f KB/s", net.downloadRate);
 
 		ImGui::Separator();
 
-		// 4. Packet Loss (Optional, if you implemented the logic)
-		// ImGui::Text("Packets Sent: %d", net.packetsSent); // You'd need to make packetsSent public
+		// --- Packet Loss ---
+		// Color logic: 0% = Green, <5% = Yellow, >5% = Red
+		ImVec4 lossColor = ImVec4(0, 1, 0, 1); // Green
+		if (net.packetLoss > 0.0f) lossColor = ImVec4(1, 1, 0, 1); // Yellow (Any loss is bad)
+		if (net.packetLoss > 5.0f) lossColor = ImVec4(1, 0, 0, 1); // Red (Critical)
+
+		ImGui::TextColored(lossColor, "Reliable Loss: %.2f %%", net.packetLoss);
+
+		// Optional: Show raw count for debugging
+		 ImGui::SameLine();
+		 ImGui::TextDisabled("(%d lost)", net.getLostPackets());
 
 		ImGui::End();
 	}
@@ -462,7 +500,7 @@ void CoopScene::handleNetworking()
 		int bytes = net.receivePacket(buffer, 4096, sender);
 		if (bytes < 0) break;
 
-		if (net.processDebugPacket(buffer))
+		if (net.handleInternalPacket(buffer))
 		{
 			continue;
 		}
@@ -580,6 +618,46 @@ void CoopScene::handleNetworking()
 		{
 			ScorePacket* pkt = (ScorePacket*)buffer;
 			score = pkt->score;
+		}
+
+		if (h->type == WORLD_STATE) {
+			WorldStatePacket* pkt = (WorldStatePacket*)buffer;
+
+			for (int i = 0; i < pkt->enemyCount; i++)
+			{
+				int id = pkt->enemies[i].id;
+				auto ent = entManager.getEnt(id);
+
+				if (ent && ent->getisAlive())
+				{
+					float serverX = pkt->enemies[i].x;
+					float serverY = pkt->enemies[i].y;
+
+					// 1. Calculate the difference (Drift)
+					float dx = ent->getPos().x - serverX;
+					float dy = ent->getPos().y - serverY;
+
+					// Use squared distance to avoid slow sqrt() calls
+					float distSq = dx * dx + dy * dy;
+
+					// 2. Define your Threshold (e.g., 15 pixels)
+					// If the enemy is within 15 pixels, we ignore the server and keep it smooth.
+					// If it drifts more than 15 pixels, we snap it back.
+					float threshold = 30.0f;
+
+					if (distSq > (threshold * threshold))
+					{
+						// Too far apart! Snap to server position.
+						ent->setPos(vec2(serverX, serverY));
+
+						// Optional: Update velocity too if the packet contains it, 
+						// to ensure it starts moving in the correct direction immediately.
+						// ent->setVelocity(vec2(pkt->enemies[i].vx, pkt->enemies[i].vy));
+					}
+					// Else: The drift is small, so we do NOTHING. 
+					// We let the local simulation continue smoothly.
+				}
+			}
 		}
 	}
 }
