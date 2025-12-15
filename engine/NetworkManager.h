@@ -7,11 +7,9 @@
 #include <iostream>
 #include <chrono>
 
-// Link library
 #pragma comment(lib, "ws2_32.lib")
 
 // --- PACKET STRUCTURES ---
-// We use 'push' and 'pop' to ensure data is sent byte-by-byte without padding
 #pragma pack(push, 1) 
 
 enum PacketType 
@@ -56,6 +54,7 @@ struct PlayerPosPacket
     PacketHeader header = { PLAYER_POS };
     float x, y;
     float vx, vy;
+    uint32_t tick; // Simulation tick
 };
 
 struct RewindPacket 
@@ -155,6 +154,8 @@ public:
     void updateDebug();
     void sendPingPacket();
     bool processDebugPacket(void* packetData);
+
+    unsigned int getLocalSequence();
 
 private:
     unsigned int localSequence = 0; // My outgoing sequence id

@@ -133,6 +133,7 @@ void CoopScene::handleEvent(const sf::Event& event)
 
 void CoopScene::update(float deltaTime)
 {
+	localTick++;
 	NetworkManager& net = NetworkManager::getInstance();
 	NetworkManager::getInstance().updateDebug();
 	handleNetworking();
@@ -436,13 +437,16 @@ void CoopScene::render(sf::RenderWindow& window)
 
 void CoopScene::sendMyPosition()
 {
-	if (!localPlayer && !rewindSystem.isRewinding()) return;
+	if (!localPlayer || rewindSystem.isRewinding()) return;
 
 	PlayerPosPacket pkt;
+	pkt.header.type = PLAYER_POS;
+	pkt.header.sequenceID = 0; // debug safety will be set in sendPacket
 	pkt.x = localPlayer->getPos().x;
 	pkt.y = localPlayer->getPos().y;
 	pkt.vx = localPlayer->getVelocity().x;
 	pkt.vy = localPlayer->getVelocity().y;
+	pkt.tick = localTick;
 
 	NetworkManager::getInstance().sendPacket(&pkt, sizeof(pkt));
 }

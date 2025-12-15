@@ -16,6 +16,8 @@
 class CoopScene : public Scene
 {
 private:
+	uint32_t localTick = 0;
+
 	EntityManager& entManager;
 	Collision collision;
 	RewindSystem rewindSystem;

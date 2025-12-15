@@ -200,3 +200,8 @@ void NetworkManager::sendPingPacket()
 	pkt.timestamp = getTime();
 	sendPacket(&pkt, sizeof(pkt));
 }
+
+unsigned int NetworkManager::getLocalSequence()
+{
+	return localSequence;
+}
