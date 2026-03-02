@@ -51,7 +51,6 @@ private:
 
 	void handleNetworking();
 	void sendMyPosition();
-	//void syncEntity(const EntityState& state);
 	void spawnEnemies(NetworkManager& net);
 
 public:

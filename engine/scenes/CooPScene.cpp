@@ -104,13 +104,23 @@ void CoopScene::handleEvent(const sf::Event& event)
 		rewindSystem.triggerRewind();
 	}
 
-	//Bullet Fire Logic
+	// Mouse Clicked Events
 	if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && !isPaused && !rewindSystem.isRewinding())
 	{
 		sf::Vector2i mousePixel = sf::Mouse::getPosition(*sceneManager.getRenderWindow());
 		sf::Vector2f mouseWorld = sceneManager.getRenderWindow()->mapPixelToCoords(mousePixel);
 		vec2 mousePos(mouseWorld.x, mouseWorld.y);
 
+
+		// Back Button Logic
+		if (BackButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePixel)))
+		{
+			sceneManager.loadScene(SceneID::MainMenu);
+			ExitPacket pkt;
+			net.sendReliable(&pkt, sizeof(pkt));
+		}
+
+		//Bullet Fire Logic
 		if (localPlayer->getisAlive()) // Only local player sends the bullet info so the remote player can spawn it.
 		{
 			vec2 playerPos = localPlayer->getPos();
@@ -649,6 +659,12 @@ void CoopScene::handleNetworking()
 					}
 				}
 			}
+		}
+
+		if (h->type == EXIT)
+		{
+			rewindSystem.pauseCapture();
+			SceneManager::getInstance().loadScene(SceneID::MainMenu);
 		}
 	}
 }
