@@ -29,7 +29,8 @@ enum PacketType
     SCORE = 11,
     PING = 12,
     PONG = 13,
-    ACK = 14
+    ACK = 14,
+    EXIT = 15
 };
 
 enum PacketFlags
@@ -142,6 +143,11 @@ struct WorldStatePacket
     PacketHeader header = { WORLD_STATE };
     int enemyCount;
     EnemyStateData enemies[64];
+};
+
+struct ExitPacket
+{
+    PacketHeader header = { EXIT };
 };
 
 #pragma pack(pop)
