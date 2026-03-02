@@ -5,7 +5,6 @@
 
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int)
 {
-    // Seed the random number generator for true random enemy spawning
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
     
     if (g_Config.readConfig("CONFIG.txt"))

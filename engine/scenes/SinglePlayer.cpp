@@ -27,7 +27,7 @@ SinglePlayerScene::SinglePlayerScene()
 	// Create Player 
 	entManager.createEntity<Player>();
 
-	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / g_Config.game.window.frameLimit);
+	enemySpawnIntervalMs = static_cast<float>(g_Config.game.enemy.spawnInterval) * (1000 / 60.0f); // 
 
 	// Score Setup
 	scoreText.setFont(font);
@@ -283,7 +283,7 @@ void SinglePlayerScene::update(float deltaTime)
 	}
 	
 	rewindSystem.update(); // Allways keep rewind before clear or else it will fuck it up
-	g_window.clear();
+	//g_window.clear(); // No need of clear now clearing it in GameManager
 	entManager.update(deltaTime);
 }
 

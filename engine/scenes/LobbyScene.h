@@ -43,11 +43,9 @@ private:
     };
     std::vector<FoundServer> foundServers;
 
-    // --- Logs ---
     std::deque<std::string> debugLogs;
     void addLog(const std::string& msg);
 
-    // --- Logic Functions ---
     bool updateHostLogic(float dt);
     bool updateClientLogic(float dt);
     void initUI();

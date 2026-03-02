@@ -26,7 +26,6 @@ private:
     sf::Font font;
     sf::Text titleText;
 
-    // modernized buttons
     ModernButton btnSinglePlayer;
     ModernButton btnCoop;
     ModernButton btnExit;

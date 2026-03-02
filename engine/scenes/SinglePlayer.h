@@ -8,6 +8,7 @@
 
 #include <imgui.h>
 #include <imgui-SFML.h>
+#include <time.h>
 
 class SceneManager;
 class EntityManager;

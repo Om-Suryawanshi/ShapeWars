@@ -12,6 +12,8 @@
 
 struct SystemConfig {
 	bool debugMode; // true = Debug, false = Release
+	bool headlessMode; // Run Simulation without rendering for AI
+	float simulationSpeed; // Speed Multiplier for the headlessMode
 };
 
 struct WindowConfig {

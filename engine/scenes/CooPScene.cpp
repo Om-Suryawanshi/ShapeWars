@@ -23,8 +23,8 @@ CoopScene::CoopScene()
 		g_ImguiStyle = ImGui::GetStyle();
 	}
 
-	const int HOST_ID = 1; // Host PLayer id (LocalPlayer)
-	const int CLIENT_ID = 1000000; // Client Player id (RemotePlayer)
+	const int HOST_ID = 1; 
+	const int CLIENT_ID = 1000000;
 
 	if (net.isHost) 
 	{
@@ -53,7 +53,7 @@ CoopScene::CoopScene()
 		std::cout << "[Coop] Client ready. Waiting for World State...\n";
 	}
 	// Enemy Setup
-	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / g_Config.game.window.frameLimit);
+	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / 60.0f);
 
 	// Score Setup
 	scoreText.setFont(font);
@@ -131,16 +131,8 @@ void CoopScene::handleEvent(const sf::Event& event)
 	}
 }
 
-void CoopScene::update(float deltaTime)
+void CoopScene::spawnEnemies(NetworkManager& net)
 {
-	localTick++;
-	NetworkManager& net = NetworkManager::getInstance();
-	net.update(); // Resends lost reliable pkts
-	net.updateStats(); // Updates ping pkt loss
-	handleNetworking(); // Checks incomming pkts
-
-	if (isPaused) return;
-
 	// Enemy Spawnner
 	if (net.isHost)
 	{
@@ -206,6 +198,20 @@ void CoopScene::update(float deltaTime)
 			enemySpawnClock.restart();
 		}
 	}
+}
+
+void CoopScene::update(float deltaTime)
+{
+	localTick++;
+	NetworkManager& net = NetworkManager::getInstance();
+	net.update(); // Resends lost reliable pkts
+	net.updateStats(); // Updates ping pkt loss
+	handleNetworking(); // Checks incomming pkts
+
+	if (isPaused) return;
+
+	spawnEnemies(net);
+	
 
 	// Collision code between player handle only localplayer the remote player will handle himself
 	for (auto& enemy : entManager.getByType(EntityType::Enemy))
@@ -363,7 +369,6 @@ void CoopScene::update(float deltaTime)
 		for (auto& ent : enemies) {
 			if (!ent->getisAlive()) continue;
 
-			// 2. Add them to the packet
 			if (pkt.enemyCount < 64) {
 				pkt.enemies[pkt.enemyCount].id = ent->getId();
 				pkt.enemies[pkt.enemyCount].x = ent->getPos().x;
@@ -528,10 +533,6 @@ void CoopScene::handleNetworking()
 			rewindSystem.clearHistory();
 		}
 
-		if (h->type == WORLD_STATE) {
-			// Snap enemies to correct pos
-		}
-
 		if (h->type == PAUSE)
 		{
 			PausePacket* pkt = (PausePacket*)buffer;
@@ -633,29 +634,19 @@ void CoopScene::handleNetworking()
 					float serverX = pkt->enemies[i].x;
 					float serverY = pkt->enemies[i].y;
 
-					// 1. Calculate the difference (Drift)
 					float dx = ent->getPos().x - serverX;
 					float dy = ent->getPos().y - serverY;
 
 					// Use squared distance to avoid slow sqrt() calls
 					float distSq = dx * dx + dy * dy;
 
-					// 2. Define your Threshold (e.g., 15 pixels)
-					// If the enemy is within 15 pixels, we ignore the server and keep it smooth.
-					// If it drifts more than 15 pixels, we snap it back.
-					float threshold = 30.0f;
+					float threshold = 1.0f;
 
 					if (distSq > (threshold * threshold))
 					{
-						// Too far apart! Snap to server position.
 						ent->setPos(vec2(serverX, serverY));
-
-						// Optional: Update velocity too if the packet contains it, 
-						// to ensure it starts moving in the correct direction immediately.
-						// ent->setVelocity(vec2(pkt->enemies[i].vx, pkt->enemies[i].vy));
+						ent->setVelocity(vec2(pkt->enemies[i].vx, pkt->enemies[i].vy));
 					}
-					// Else: The drift is small, so we do NOTHING. 
-					// We let the local simulation continue smoothly.
 				}
 			}
 		}

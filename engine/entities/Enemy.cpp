@@ -53,7 +53,7 @@ void Enemy::update(float deltaTime)
 	if (!paused)
 	{
 		//Age
-		age += 10.0f / g_Config.game.window.frameLimit;
+		age += 0.4f + deltaTime;
 		if (age >= lifetime)
 		{
 			die();

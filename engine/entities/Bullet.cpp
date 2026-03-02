@@ -26,8 +26,8 @@ void Bullet::update(float deltaTime)
 {
 	if (!paused)
 	{
-		pos += velocity;
-		age += 50.0f / g_Config.game.window.frameLimit; // Randomly Trial and error value 50.0f for ageing lower it to decrease ageing
+		pos += velocity * deltaTime * 60.0f;
+		age += 0.5f + deltaTime; // lower it to decrease ageing
 
 		if (age >= lifetime)
 		{
