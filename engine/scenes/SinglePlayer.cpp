@@ -27,7 +27,7 @@ SinglePlayerScene::SinglePlayerScene()
 	// Create Player 
 	entManager.createEntity<Player>();
 
-	enemySpawnIntervalMs = static_cast<float>(g_Config.game.enemy.spawnInterval) * (1000 / 60.0f); // 
+	enemySpawnIntervalMs = static_cast<int>(g_Config.game.enemy.spawnInterval * (1000 / 60.0f)); // 
 
 	// Score Setup
 	scoreText.setFont(font);

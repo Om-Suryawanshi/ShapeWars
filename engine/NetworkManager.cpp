@@ -17,7 +17,7 @@ void NetworkManager::reset()
         cleanup();
 
     WSADATA wsa;
-    WSAStartup(MAKEWORD(2, 2), &wsa);
+    WSAStartup(MAKEWORD(2, 2), &wsa); 
 
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
@@ -107,7 +107,7 @@ void NetworkManager::sendReliable(void* data, int size)
 
     reliableOutbox[rp.sequence] = rp;
 
-    sendto(sock, rp.data.data(), rp.data.size(), 0,
+    sendto(sock, rp.data.data(), static_cast<int>(rp.data.size()), 0,
         (sockaddr*)&destAddr, sizeof(destAddr));
 
     bytesSentAccumulator += size;
@@ -215,14 +215,14 @@ void NetworkManager::update()
         // If 200ms have passed and no ACK, resend it!
         if (elapsed > 200 && pkt.resendCount < 5)
         {
-            sendto(sock, pkt.data.data(), pkt.data.size(), 0,
+            sendto(sock, pkt.data.data(), static_cast<int>(pkt.data.size()), 0,
                 (sockaddr*)&destAddr, sizeof(destAddr));
 
             pkt.lastSent = now;
             pkt.resendCount++;
 
             // Optional: Count this as "extra bytes sent" for stats
-            bytesSentAccumulator += pkt.data.size();
+            bytesSentAccumulator += static_cast<int>(pkt.data.size());
         }
     }
 }

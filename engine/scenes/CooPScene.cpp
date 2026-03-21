@@ -5,6 +5,8 @@
 
 CoopScene::CoopScene()
 	: entManager(EntityManager::getInstance())
+	, net(NetworkManager::getInstance())
+	, sceneManager(SceneManager::getInstance())
 	, rewindSystem(entManager, 300)
 {
 	NetworkManager& net = NetworkManager::getInstance();
@@ -53,7 +55,7 @@ CoopScene::CoopScene()
 		std::cout << "[Coop] Client ready. Waiting for World State...\n";
 	}
 	// Enemy Setup
-	enemySpawnIntervalMs = g_Config.game.enemy.spawnInterval * (1000 / 60.0f);
+	enemySpawnIntervalMs = static_cast<int>(g_Config.game.enemy.spawnInterval * (1000 / 60.0f));
 
 	// Score Setup
 	scoreText.setFont(font);
@@ -81,8 +83,13 @@ void CoopScene::handleEvent(const sf::Event& event)
 		ImGui::SFML::ProcessEvent(event);
 	}
 
-	NetworkManager& net = NetworkManager::getInstance();
-	SceneManager& sceneManager = SceneManager::getInstance();
+	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+	{
+		ExitPacket pkt;
+		net.sendReliable(&pkt, sizeof(pkt));
+		net.cleanup();
+	}
+
 
 	// Pause
 	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P && !rewindSystem.isRewinding())
@@ -118,6 +125,7 @@ void CoopScene::handleEvent(const sf::Event& event)
 			sceneManager.loadScene(SceneID::MainMenu);
 			ExitPacket pkt;
 			net.sendReliable(&pkt, sizeof(pkt));
+			net.cleanup();
 		}
 
 		//Bullet Fire Logic
@@ -664,6 +672,7 @@ void CoopScene::handleNetworking()
 		if (h->type == EXIT)
 		{
 			rewindSystem.pauseCapture();
+			NetworkManager::getInstance().cleanup();
 			SceneManager::getInstance().loadScene(SceneID::MainMenu);
 		}
 	}

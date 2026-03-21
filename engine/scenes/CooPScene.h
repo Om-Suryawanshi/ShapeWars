@@ -19,8 +19,12 @@ private:
 	uint32_t localTick = 0;
 
 	EntityManager& entManager;
+	NetworkManager& net;
+	SceneManager& sceneManager;
+
 	Collision collision;
 	RewindSystem rewindSystem;
+
 
 	std::shared_ptr<entity> localPlayer;
 	std::shared_ptr<entity> remotePlayer;
