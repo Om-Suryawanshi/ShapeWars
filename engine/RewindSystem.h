@@ -29,7 +29,7 @@ class RewindSystem
 {
 public:
 	RewindSystem(EntityManager& entManager, int maxFrames);
-
+	~RewindSystem();
 	void update();
 	void triggerRewind();
 	void loadSnapShot(const FrameSnapshot& snapshot);

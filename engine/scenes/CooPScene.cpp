@@ -122,10 +122,11 @@ void CoopScene::handleEvent(const sf::Event& event)
 		// Back Button Logic
 		if (BackButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePixel)))
 		{
-			sceneManager.loadScene(SceneID::MainMenu);
 			ExitPacket pkt;
 			net.sendReliable(&pkt, sizeof(pkt));
 			net.cleanup();
+			sceneManager.loadScene(SceneID::MainMenu);
+			return;
 		}
 
 		//Bullet Fire Logic
@@ -672,6 +673,7 @@ void CoopScene::handleNetworking()
 		if (h->type == EXIT)
 		{
 			rewindSystem.pauseCapture();
+			rewindSystem.clearHistory();
 			NetworkManager::getInstance().cleanup();
 			SceneManager::getInstance().loadScene(SceneID::MainMenu);
 		}

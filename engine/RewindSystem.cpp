@@ -9,6 +9,11 @@ RewindSystem::RewindSystem(EntityManager& manager, int maxFrames)
     history.resize(maxFrames);
 }
 
+RewindSystem::~RewindSystem()
+{
+    
+}
+
 void RewindSystem::update() {
     if (m_rewinding) {
         if (m_rewindClock.getElapsedTime().asMilliseconds() >= 10) {
