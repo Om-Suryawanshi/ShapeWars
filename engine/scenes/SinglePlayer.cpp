@@ -19,6 +19,12 @@ SinglePlayerScene::SinglePlayerScene()
 	BackButtonText.setCharacterSize(28);
 	BackButtonText.setPosition(15, BackButton.getSize().y);
 
+	RestartText.setFont(font);
+	RestartText.setString("Game Over!  Press Space to restart.");
+	auto bounds = RestartText.getLocalBounds();
+	RestartText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+	RestartText.setPosition(g_Config.game.window.width / 2, g_Config.game.window.height / 2);
+	RestartText.setCharacterSize(42);
 
 	if (g_Config.game.system.debugMode)
 	{
@@ -53,6 +59,16 @@ void SinglePlayerScene::handleEvent(const sf::Event& event)
 
 void SinglePlayerScene::update(float deltaTime)
 {
+	if (isGameOver)
+	{
+		if (inputHandler.isKeyJustPressed(' '))
+		{
+			restartGame();
+		}
+		return;
+	}
+
+	// Ingui shit
 	bool isMouseOverUI = false;
 	if (g_Config.game.system.debugMode) {
 		isMouseOverUI = ImGui::GetIO().WantCaptureMouse;
@@ -157,18 +173,15 @@ void SinglePlayerScene::update(float deltaTime)
 
 	//Collision Code between player and enemy
 	std::shared_ptr<entity> player = entManager.getPlayer();
+	if (!player) return;
 	for (auto& enemy : entManager.getByType(EntityType::Enemy))
 	{
 		if (!enemy->getisAlive()) continue;
 		if (collision.checkCollision(*player, *enemy))
 		{
 			player->die();
-			if (!entManager.playerExists())
-			{
-				rewindSystem.clearHistory();
-				entManager.createEntity<Player>();
-			}
-			score -= enemy->getVertices() * 100;
+			isGameOver = true;
+			deathTimer = 0.f;
 			enemy->die();
 		}
 
@@ -295,6 +308,10 @@ void SinglePlayerScene::update(float deltaTime)
 
 void SinglePlayerScene::render(sf::RenderWindow& window)
 {
+	if (isGameOver)
+	{
+		window.draw(RestartText);
+	}
 	window.draw(scoreText);
 	window.draw(BackButton);
 	window.draw(BackButtonText);
@@ -305,9 +322,66 @@ void SinglePlayerScene::render(sf::RenderWindow& window)
 	}
 }
 
+void SinglePlayerScene::restartGame()
+{
+	if (isGameOver)
+	{
+		entManager.clearAll();
+		rewindSystem.clearHistory();
+		entManager.createEntity<Player>();
+		score = 0;
+		isGameOver = false;
+	}
+}
+
 SinglePlayerScene::~SinglePlayerScene()
 {
 	std::cout << "SinglePlayerScene destroyed\n";
 	entManager.clearAll();
 	rewindSystem.clearHistory();
+}
+
+void SinglePlayerScene::populateGameState(RawGameState& data) const
+{
+	data.enemyPositions.clear();
+	data.miniEnemyPositions.clear();
+	data.bulletPositions.clear();
+
+	std::shared_ptr<entity> player = entManager.getPlayer();
+	if (player)
+	{
+		data.isPlayerDead = false;
+		data.playerPos = player->getPos();
+	}
+	else
+	{
+		data.isPlayerDead = true;
+		data.playerPos = { 0.0f, 0.0f };
+	}
+
+	for (const auto& enemy : entManager.getByType(EntityType::Enemy))
+	{
+		if (enemy->getisAlive())
+		{
+			data.enemyPositions.push_back(enemy->getPos());
+		}
+	}
+
+	for (const auto& minienemy : entManager.getByType(EntityType::MiniEnemy))
+	{
+		if (minienemy->getisAlive())
+		{
+			data.miniEnemyPositions.push_back(minienemy->getPos());
+		}
+	}
+
+	for (const auto& bullet : entManager.getByType(EntityType::Bullet))
+	{
+		if (bullet->getisAlive())
+		{
+			data.bulletPositions.push_back(bullet->getPos());
+		}
+	}
+
+	data.currentScore = static_cast<float>(score);
 }

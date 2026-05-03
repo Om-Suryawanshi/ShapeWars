@@ -10,9 +10,14 @@
 #include "AssetHandler.h"
 #include "InputHandler.h"
 
+#include "GameData.h" // For ai
+
 
 class GameManager
 {
+private:
+	RawGameState GameState;
+
 protected:
 	sf::RenderWindow g_window;
 	sf::Clock g_deltaClock;
@@ -45,4 +50,6 @@ public:
 	unsigned int height() const;
 	sf::RenderWindow& getWindow();
 	bool isRunning();
+
+	const RawGameState& getRawGameState();
 };

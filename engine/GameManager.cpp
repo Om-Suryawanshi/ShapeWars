@@ -105,6 +105,7 @@ void GameManager::update()
 void GameManager::step(float dt)
 {
 	updateLogic(dt);
+	inputHandler.endFrame();
 }
 
 void GameManager::runHeadless(int maxSteps)
@@ -116,6 +117,7 @@ void GameManager::runHeadless(int maxSteps)
 	while (g_running && (maxSteps < 0 || stepCount < maxSteps))
 	{
 		updateLogic(fixedDeltaTime);
+		inputHandler.endFrame();
 		stepCount++;
 	}
 }
@@ -162,4 +164,14 @@ sf::RenderWindow& GameManager::getWindow()
 bool GameManager::isRunning()
 {
 	return g_running && g_window.isOpen();
+}
+
+const RawGameState& GameManager::getRawGameState()
+{
+	auto scene = dynamic_cast<SinglePlayerScene*>(sceneManager.getCurrentScene());
+	if (scene)
+	{
+		scene->populateGameState(GameState);
+	}
+	return GameState;
 }

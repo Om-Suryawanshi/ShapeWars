@@ -183,6 +183,7 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClCompile Include="engine\EntityManager.cpp" />
     <ClCompile Include="engine\entities\entity.cpp" />
     <ClCompile Include="engine\NetworkManager.cpp" />
+    <ClCompile Include="engine\PyBridge.cpp" />
     <ClCompile Include="engine\SceneManager.cpp" />
     <ClCompile Include="engine\scenes\CooPScene.cpp" />
     <ClCompile Include="engine\scenes\LobbyScene.cpp" />
@@ -204,6 +205,7 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClInclude Include="engine\config\config.hpp" />
     <ClInclude Include="engine\entities\Bullet.h" />
     <ClInclude Include="engine\entities\Enemy.h" />
+    <ClInclude Include="engine\GameData.h" />
     <ClInclude Include="engine\GameManager.h" />
     <ClInclude Include="engine\EntityManager.h" />
     <ClInclude Include="engine\entities\entity.h" />

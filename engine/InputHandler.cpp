@@ -46,6 +46,8 @@ char InputHandler::getCharKeyFromSFMLKey(sf::Keyboard::Key key)
 			return 'R';
 		case sf::Keyboard::Escape:
 			return 'Esc';
+		case sf::Keyboard::Space:
+			return ' ';
 		default:
 			return '\0';
 	}

@@ -353,3 +353,5 @@ build/*
 
 !deps/bin/
 !deps/bin/**
+
+imgui.ini

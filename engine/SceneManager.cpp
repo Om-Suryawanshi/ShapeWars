@@ -93,3 +93,8 @@ void SceneManager::render(sf::RenderWindow& window)
 		scenes.top()->render(window);
 	}
 }
+
+//SceneID SceneManager::getCurrentSceneId() const
+//{
+//	return;
+//}

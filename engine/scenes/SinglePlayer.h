@@ -7,6 +7,8 @@
 #include "../Collision.h"
 #include "../InputHandler.h"
 
+#include "../GameData.h"
+
 #include <imgui.h>
 #include <imgui-SFML.h>
 #include <time.h>
@@ -31,6 +33,8 @@ private:
 	sf::Text BackButtonText;
 	sf::RectangleShape BackButton;
 
+	sf::Text RestartText;
+
 	ImGuiStyle g_ImguiStyle;
 	sf::RenderWindow& g_window;
 
@@ -50,10 +54,16 @@ private:
 	int currentEnemies = 0;
 	const float safeDistanceFromPlayer = 150.f;
 
+	bool isGameOver = false;
+	float deathTimer = 0.f;
+
+	void restartGame();
+
 public:
 	SinglePlayerScene();
 	~SinglePlayerScene();
 	void handleEvent(const sf::Event& event);
 	void update(float deltaTime);
 	void render(sf::RenderWindow& window);
+	void populateGameState(RawGameState& outData) const;
 };

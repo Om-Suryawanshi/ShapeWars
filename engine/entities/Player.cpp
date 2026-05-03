@@ -46,6 +46,24 @@ void Player::update(float deltaTime)
 {
 	if (!paused)
 	{
+		if (isDying)
+		{
+			deathTimer += deltaTime;
+
+			float scale = 1.0f + deathTimer * 2.0f;
+			float alpha = 255.0f * (1.0f - deathTimer / deathDuration);
+
+			player.setScale(scale, scale);
+			player.setFillColor(sf::Color(255, 255, 255, static_cast<sf::Uint8>(alpha)));
+
+			if (deathTimer >= deathDuration)
+			{
+				isAlive = false;
+			}
+			std::cout << "Player Died" << std::endl;
+			return;
+		}
+
 		if (justRespawned)
 		{
 			justRespawned = false;
@@ -83,7 +101,9 @@ vec2 Player::getPos() const
 
 void Player::die()
 {
-	isAlive = false;
+	if (isDying) return;
+	isDying = true;
+	//isAlive = false;
 }
 
 void Player::rotate()

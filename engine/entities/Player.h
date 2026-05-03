@@ -11,6 +11,9 @@ class Player : public entity
 protected:
 	bool justRespawned = false;
 	bool isRemote = false;
+	bool isDying = false;
+	float deathTimer = 0.f;
+	float deathDuration = 1.0f;
 
 public:
 	sf::CircleShape player;

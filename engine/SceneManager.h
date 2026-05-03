@@ -40,4 +40,5 @@ public:
 	void update(float deltaTime);
 	void render(sf::RenderWindow& window);
 	void loadScene(SceneID id);
+	//SceneID getCurrentSceneId() const;
 };
