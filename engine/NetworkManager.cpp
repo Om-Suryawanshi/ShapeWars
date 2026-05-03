@@ -269,13 +269,13 @@ std::string NetworkManager::getLocalIP()
     char hostname[256];
     gethostname(hostname, sizeof(hostname));
 
-    addrinfo hints{}, * info;
+    addrinfo hints{}, *info = nullptr;
     hints.ai_family = AF_INET;
-    getaddrinfo(hostname, nullptr, &hints, &info);
+    if (getaddrinfo(hostname, nullptr, &hints, &info) != 0 || info == nullptr)
+        return "0.0.0.0";
 
     char ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &((sockaddr_in*)info->ai_addr)->sin_addr,
-        ip, sizeof(ip));
+    inet_ntop(AF_INET, &((sockaddr_in*)info->ai_addr)->sin_addr, ip, sizeof(ip));
 
     freeaddrinfo(info);
     return ip;

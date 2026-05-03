@@ -5,6 +5,7 @@
 #include "../SceneManager.h"
 #include "../RewindSystem.h"
 #include "../Collision.h"
+#include "../InputHandler.h"
 
 #include <iostream>
 #include <vector>
@@ -21,6 +22,7 @@ private:
 	EntityManager& entManager;
 	NetworkManager& net;
 	SceneManager& sceneManager;
+	InputHandler& inputHandler;
 
 	Collision collision;
 	RewindSystem rewindSystem;

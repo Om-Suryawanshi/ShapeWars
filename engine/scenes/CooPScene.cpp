@@ -7,6 +7,7 @@ CoopScene::CoopScene()
 	: entManager(EntityManager::getInstance())
 	, net(NetworkManager::getInstance())
 	, sceneManager(SceneManager::getInstance())
+	, inputHandler(InputHandler::getInstance())
 	, rewindSystem(entManager, 300)
 {
 	NetworkManager& net = NetworkManager::getInstance();
@@ -82,72 +83,6 @@ void CoopScene::handleEvent(const sf::Event& event)
 	{
 		ImGui::SFML::ProcessEvent(event);
 	}
-
-	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
-	{
-		ExitPacket pkt;
-		net.sendReliable(&pkt, sizeof(pkt));
-		net.cleanup();
-	}
-
-
-	// Pause
-	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P && !rewindSystem.isRewinding())
-	{
-		PausePacket pkt;
-		pkt.newPauseState = !isPaused;
-		net.sendReliable(&pkt, sizeof(pkt));
-		isPaused = !isPaused;
-		entManager.pauseEnt();
-	}
-
-
-	// Rewind
-	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R && !rewindSystem.isRewinding() && !isPaused)
-	{
-		RewindPacket pkt;
-		pkt.isRewinding = true;
-		net.sendReliable(&pkt, sizeof(pkt));
-		rewindSystem.triggerRewind();
-	}
-
-	// Mouse Clicked Events
-	if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && !isPaused && !rewindSystem.isRewinding())
-	{
-		sf::Vector2i mousePixel = sf::Mouse::getPosition(*sceneManager.getRenderWindow());
-		sf::Vector2f mouseWorld = sceneManager.getRenderWindow()->mapPixelToCoords(mousePixel);
-		vec2 mousePos(mouseWorld.x, mouseWorld.y);
-
-
-		// Back Button Logic
-		if (BackButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePixel)))
-		{
-			ExitPacket pkt;
-			net.sendReliable(&pkt, sizeof(pkt));
-			net.cleanup();
-			sceneManager.loadScene(SceneID::MainMenu);
-			return;
-		}
-
-		//Bullet Fire Logic
-		if (localPlayer->getisAlive()) // Only local player sends the bullet info so the remote player can spawn it.
-		{
-			vec2 playerPos = localPlayer->getPos();
-			vec2 direction = mousePos - playerPos;
-			auto entity = entManager.createEntity<Bullet>(playerPos, direction);
-			SpawnPacket pkt;
-			pkt.header.type = SPAWN_ENTITY;
-			pkt.type = (int)EntityType::Bullet;
-
-			pkt.data.bullet.id = entity->getId();
-			pkt.data.bullet.x = entity->getPos().x;
-			pkt.data.bullet.y = entity->getPos().y;
-			pkt.data.bullet.dx = direction.x;
-			pkt.data.bullet.dy = direction.y;
-
-			net.sendPacket(&pkt, sizeof(pkt));
-		}
-	}
 }
 
 void CoopScene::spawnEnemies(NetworkManager& net)
@@ -221,6 +156,70 @@ void CoopScene::spawnEnemies(NetworkManager& net)
 
 void CoopScene::update(float deltaTime)
 {
+	if (inputHandler.isKeyPressed('Esc'))
+	{
+		ExitPacket pkt;
+		net.sendReliable(&pkt, sizeof(pkt));
+		net.cleanup();
+	}
+
+	// Pause
+	if (inputHandler.isKeyPressed('P') && !rewindSystem.isRewinding())
+	{
+		PausePacket pkt;
+		pkt.newPauseState = !isPaused;
+		net.sendReliable(&pkt, sizeof(pkt));
+		isPaused = !isPaused;
+		entManager.pauseEnt();
+	}
+
+
+	// Rewind
+	if (inputHandler.isKeyPressed('R') && !rewindSystem.isRewinding() && !isPaused)
+	{
+		RewindPacket pkt;
+		pkt.isRewinding = true;
+		net.sendReliable(&pkt, sizeof(pkt));
+		rewindSystem.triggerRewind();
+	}
+
+	// Mouse Clicked Events
+	if (inputHandler.isMouseButtonJustPressed(MouseButton::Left) && !isPaused && !rewindSystem.isRewinding())
+	{
+		sf::Vector2f targetPos = inputHandler.getMousePosition();
+
+		// Back Button Logic
+		if (BackButton.getGlobalBounds().contains(targetPos))
+		{
+			ExitPacket pkt;
+			net.sendReliable(&pkt, sizeof(pkt));
+			net.cleanup();
+			sceneManager.loadScene(SceneID::MainMenu);
+			return;
+		}
+
+		vec2 aimPos(targetPos.x, targetPos.y);
+
+		//Bullet Fire Logic
+		if (localPlayer->getisAlive()) // Only local player sends the bullet info so the remote player can spawn it.
+		{
+			vec2 playerPos = localPlayer->getPos();
+			vec2 direction = aimPos - playerPos;
+			auto entity = entManager.createEntity<Bullet>(playerPos, direction);
+			SpawnPacket pkt;
+			pkt.header.type = SPAWN_ENTITY;
+			pkt.type = (int)EntityType::Bullet;
+
+			pkt.data.bullet.id = entity->getId();
+			pkt.data.bullet.x = entity->getPos().x;
+			pkt.data.bullet.y = entity->getPos().y;
+			pkt.data.bullet.dx = direction.x;
+			pkt.data.bullet.dy = direction.y;
+
+			net.sendPacket(&pkt, sizeof(pkt));
+		}
+	}
+
 	localTick++;
 	NetworkManager& net = NetworkManager::getInstance();
 	net.update(); // Resends lost reliable pkts
@@ -231,7 +230,6 @@ void CoopScene::update(float deltaTime)
 
 	spawnEnemies(net);
 	
-
 	// Collision code between player handle only localplayer the remote player will handle himself
 	for (auto& enemy : entManager.getByType(EntityType::Enemy))
 	{
@@ -372,7 +370,6 @@ void CoopScene::update(float deltaTime)
 
 	scoreText.setString("Score: " + std::to_string(score));
 
-
 	// SEND MY POSITION (e.g. 60 times a sec or less)
 	if (networkTick.getElapsedTime().asMilliseconds() > 15) {
 		sendMyPosition();
@@ -451,7 +448,7 @@ void CoopScene::update(float deltaTime)
 
 		ImGui::Begin("Network Stats");
 
-		ImGui::Text("My IP: %s", net.getLocalIP().c_str());
+		ImGui::Text("My IP: %s", !net.getLocalIP().c_str());
 
 		ImGui::Separator();
 
