@@ -4,6 +4,8 @@
 #include "../config/config.hpp"
 #include "entity.h"
 
+#include "../InputHandler.h"
+
 class Player : public entity
 {
 protected:
@@ -12,6 +14,7 @@ protected:
 
 public:
 	sf::CircleShape player;
+	InputHandler& input;
 
 	Player(int id);
 	Player(int id, bool isRemote);

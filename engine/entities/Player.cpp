@@ -5,6 +5,7 @@ Player::Player(int id)
 	: entity(id, static_cast<float>(g_Config.game.player.speed), static_cast<float>(g_Config.game.player.shapeRadius), static_cast<float>(g_Config.game.player.vertices))
 	, player(static_cast<float>(g_Config.game.player.shapeRadius), static_cast<size_t>(g_Config.game.player.vertices)) // sf::CircleShape init
 	, isRemote(false)
+	, input(InputHandler::getInstance())
 {
 	type = EntityType::Player;
 	isAlive = true;
@@ -23,6 +24,7 @@ Player::Player(int id, bool m_isRemote)
 	: entity(id, static_cast<float>(g_Config.game.player.speed), static_cast<float>(g_Config.game.player.shapeRadius), static_cast<float>(g_Config.game.player.vertices))
 	, player(static_cast<float>(g_Config.game.player.shapeRadius), static_cast<size_t>(g_Config.game.player.vertices)) // sf::CircleShape init
 	, isRemote(m_isRemote)
+	, input(InputHandler::getInstance())
 {
 	type = EntityType::Player;
 	isAlive = true;
@@ -53,10 +55,10 @@ void Player::update(float deltaTime)
 		// Movement
 		if (!isRemote)
 		{
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) pos.y -= speed;
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) pos.y += speed;
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) pos.x -= speed;
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) pos.x += speed;
+			if (input.isKeyPressed('W')) pos.y -= speed;
+			if (input.isKeyPressed('S')) pos.y += speed;
+			if (input.isKeyPressed('A')) pos.x -= speed;
+			if (input.isKeyPressed('D')) pos.x += speed;
 		}
 		// Boundry Checking so the player dosent clip out
 		if (pos.x < size) pos.x = size;

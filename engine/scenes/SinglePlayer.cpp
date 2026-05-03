@@ -49,30 +49,39 @@ void SinglePlayerScene::handleEvent(const sf::Event& event)
 	{
 		ImGui::SFML::ProcessEvent(event);
 	}
+}
 
+void SinglePlayerScene::update(float deltaTime)
+{
+	bool isMouseOverUI = false;
+	if (g_Config.game.system.debugMode) {
+		isMouseOverUI = ImGui::GetIO().WantCaptureMouse;
+	}
 
 	// Mouse Left key press logic
-	if (event.type == sf::Event::MouseButtonPressed &&
-		event.mouseButton.button == sf::Mouse::Left && !m_isPaused && !rewindSystem.isRewinding())
+	if (inputHandler.isMouseButtonJustPressed(MouseButton::Left) && !m_isPaused && !rewindSystem.isRewinding())
 	{
-		//Bullet fire logic
-		sf::Vector2i mousePixel = sf::Mouse::getPosition(g_window);
-		sf::Vector2f mouseWorld = g_window.mapPixelToCoords(mousePixel);
-		vec2 mousePos(mouseWorld.x, mouseWorld.y);
-
-		std::shared_ptr<entity> playerEnt = entManager.getPlayer();
-		if (playerEnt)
-		{
-			vec2 playerPos = playerEnt->getPos();
-			vec2 direction = mousePos - playerPos;
-			entManager.createEntity<Bullet>(playerPos, direction);
-		}
+		sf::Vector2f targetPos = inputHandler.getMousePosition();
 
 		// Back button logic
-		if (BackButton.getGlobalBounds().contains(static_cast<sf::Vector2f>(mousePixel)))
+		if (BackButton.getGlobalBounds().contains(targetPos))
 		{
 			sceneManager.loadScene(SceneID::MainMenu);
-			//rewindSystem.clearHistory();
+			return;
+		}
+
+		//Bullet fire logic
+		else
+		{
+			vec2 aimPos(targetPos.x, targetPos.y);
+
+			std::shared_ptr<entity> playerEnt = entManager.getPlayer();
+			if (playerEnt)
+			{
+				vec2 playerPos = playerEnt->getPos();
+				vec2 direction = aimPos - playerPos;
+				entManager.createEntity<Bullet>(playerPos, direction);
+			}
 		}
 	}
 
@@ -90,10 +99,7 @@ void SinglePlayerScene::handleEvent(const sf::Event& event)
 		std::cerr << "Rewind triggered" << std::endl;
 		rewindSystem.triggerRewind();
 	}
-}
 
-void SinglePlayerScene::update(float deltaTime)
-{
 	// Enemy Spawn Logic
 	if (enemySpawnClock.getElapsedTime().asMilliseconds() >= enemySpawnIntervalMs && !m_isPaused && !rewindSystem.isRewinding())
 	{

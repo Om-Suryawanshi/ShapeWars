@@ -67,8 +67,8 @@ void GameManager::processEvents()
 		{
 			g_window.close();
 		}
+		inputHandler.processEvent(g_event); // Updates the input struct before handleing the events
 		sceneManager.handleEvent(g_event);
-		inputHandler.processEvent(g_event);
 	}
 }
 
@@ -77,6 +77,7 @@ void GameManager::updateWithRendering()
 	if (!isRunning())
 		return;
 
+	inputHandler.updateHardwareMouse(g_window);
 	processEvents();
 	float dt = g_deltaClock.restart().asSeconds();
 	updateLogic(dt);
