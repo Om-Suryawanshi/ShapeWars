@@ -5,6 +5,7 @@
 #include "../SceneManager.h"
 #include "../RewindSystem.h"
 #include "../Collision.h"
+#include "../InputHandler.h"
 
 #include <imgui.h>
 #include <imgui-SFML.h>
@@ -20,6 +21,7 @@ private:
 	EntityManager& entManager;
 	SceneManager& sceneManager;
 	AssetHandler& assetHandler;
+	InputHandler& inputHandler;
 	RewindSystem rewindSystem;
 	Collision collision;
 

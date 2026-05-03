@@ -8,6 +8,7 @@ GameManager::GameManager()
 	,entManager(EntityManager::getInstance())
 	,assetHandler(AssetHandler::getInstance())
 	,sceneManager(SceneManager::getInstance())
+	,inputHandler(InputHandler::getInstance())
 {
 	assetHandler.loadFont("mainFont", g_Config.game.font.path);
 	init();
@@ -67,6 +68,7 @@ void GameManager::processEvents()
 			g_window.close();
 		}
 		sceneManager.handleEvent(g_event);
+		inputHandler.processEvent(g_event);
 	}
 }
 
@@ -82,6 +84,7 @@ void GameManager::updateWithRendering()
 	g_window.clear();
 	sceneManager.render(g_window);
 	g_window.display();
+	inputHandler.endFrame();
 }
 
 void GameManager::update()
@@ -90,6 +93,7 @@ void GameManager::update()
 	{
 		float fixedDeltaTime = 1.0f / g_Config.game.window.frameLimit;
 		updateLogic(fixedDeltaTime);
+		inputHandler.endFrame();
 	}
 	else
 	{

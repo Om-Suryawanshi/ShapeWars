@@ -78,6 +78,9 @@
     <ClCompile Include="engine\scenes\LobbyScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="engine\InputHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\GameManager.h">
@@ -453,6 +456,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="engine\scenes\LobbyScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\InputHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

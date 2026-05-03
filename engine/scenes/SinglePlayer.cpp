@@ -4,6 +4,7 @@ SinglePlayerScene::SinglePlayerScene()
 	:entManager(EntityManager::getInstance())
 	, assetHandler(AssetHandler::getInstance())
 	, sceneManager(SceneManager::getInstance())
+	, inputHandler(InputHandler::getInstance())
 	, g_window((*sceneManager.getRenderWindow()))
 	, rewindSystem(entManager, 300)
 {
@@ -76,7 +77,7 @@ void SinglePlayerScene::handleEvent(const sf::Event& event)
 	}
 
 	// Pause with P
-	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P && !rewindSystem.isRewinding())
+	if (inputHandler.isKeyJustPressed('P') && !rewindSystem.isRewinding())
 	{
 		m_isPaused = !m_isPaused;
 		entManager.pauseEnt();
@@ -84,7 +85,7 @@ void SinglePlayerScene::handleEvent(const sf::Event& event)
 	}
 
 	// Rewind
-	if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::R && !m_isPaused)
+	if (inputHandler.isKeyJustPressed('R') && !m_isPaused)
 	{
 		std::cerr << "Rewind triggered" << std::endl;
 		rewindSystem.triggerRewind();
@@ -282,8 +283,7 @@ void SinglePlayerScene::update(float deltaTime)
 		ImGui::End();
 	}
 	
-	rewindSystem.update(); // Allways keep rewind before clear or else it will fuck it up
-	//g_window.clear(); // No need of clear now clearing it in GameManager
+	rewindSystem.update();
 	entManager.update(deltaTime);
 }
 

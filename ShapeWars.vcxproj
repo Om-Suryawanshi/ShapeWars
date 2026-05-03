@@ -193,6 +193,7 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClCompile Include="external\imgui\imgui_draw.cpp" />
     <ClCompile Include="external\imgui\imgui_tables.cpp" />
     <ClCompile Include="external\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="engine\InputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="engine\entities\Player.cpp" />
     <ClCompile Include="engine\RewindSystem.cpp" />
@@ -208,6 +209,7 @@ xcopy "$(ProjectDir)config.txt" "$(OutDir)" /y /d</Command>
     <ClInclude Include="engine\entities\entity.h" />
     <ClInclude Include="engine\config\vec2.h" />
     <ClInclude Include="engine\entities\Player.h" />
+    <ClInclude Include="engine\InputHandler.h" />
     <ClInclude Include="engine\NetworkManager.h" />
     <ClInclude Include="engine\RewindSystem.h" />
     <ClInclude Include="engine\SceneManager.h" />

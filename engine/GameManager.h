@@ -4,14 +4,12 @@
 #include <string>
 #include <iostream>
 
-//#include "Player.h"
 #include "config/config.hpp"
 #include "EntityManager.h"
 #include "SceneManager.h"
 #include "AssetHandler.h"
-#include "RewindSystem.h"
-#include "entities/player.h"
-#include "entities/Enemy.h"
+#include "InputHandler.h"
+
 
 class GameManager
 {
@@ -26,6 +24,7 @@ protected:
 	SceneManager& sceneManager;
 	AssetHandler& assetHandler;
 	EntityManager& entManager;
+	InputHandler& inputHandler;
 
 	void updateLogic(float dt);
 	void updateWithRendering();
@@ -46,5 +45,4 @@ public:
 	unsigned int height() const;
 	sf::RenderWindow& getWindow();
 	bool isRunning();
-	void updateScoreText();
 };
