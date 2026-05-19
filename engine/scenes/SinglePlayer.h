@@ -35,11 +35,13 @@ private:
 
 	sf::Text RestartText;
 
+	sf::RectangleShape replayBar;
+	sf::RectangleShape replayBarFill;
+
 	ImGuiStyle g_ImguiStyle;
 	sf::RenderWindow& g_window;
 
 	bool m_isPaused = false;
-
 
 	//World Config
 	int score;
@@ -56,6 +58,7 @@ private:
 
 	bool isGameOver = false;
 	float deathTimer = 0.f;
+	const float padding = 20.f;
 
 	void restartGame();
 

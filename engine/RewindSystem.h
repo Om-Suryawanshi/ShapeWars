@@ -31,11 +31,13 @@ public:
 	RewindSystem(EntityManager& entManager, int maxFrames);
 	~RewindSystem();
 	void update();
-	void triggerRewind();
+	void triggerRewind(); // Complete rewind in single key press
+	void triggerRewind(bool keyPress); // Only rewind till the keypress
 	void loadSnapShot(const FrameSnapshot& snapshot);
 	bool isRewinding() const;
 	void clearHistory();
 	void pauseCapture();
+	float bufferState() const;
 
 private:
 	EntityManager& entManager;

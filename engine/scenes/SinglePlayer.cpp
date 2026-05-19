@@ -20,11 +20,17 @@ SinglePlayerScene::SinglePlayerScene()
 	BackButtonText.setPosition(15, BackButton.getSize().y);
 
 	RestartText.setFont(font);
-	RestartText.setString("Game Over!  Press Space to restart.");
+	RestartText.setString("Game Over! Press Space to restart.");
 	auto bounds = RestartText.getLocalBounds();
 	RestartText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-	RestartText.setPosition(g_Config.game.window.width / 2, g_Config.game.window.height / 2);
+	RestartText.setPosition(g_Config.game.window.width / 2 - padding, g_Config.game.window.height / 2 - padding);
 	RestartText.setCharacterSize(42);
+
+	replayBar.setSize({ 200.f, 20.f });
+	replayBar.setFillColor(sf::Color(40, 40, 40));
+	replayBar.setPosition(g_Config.game.window.width - replayBar.getSize().x - padding, padding);
+	replayBarFill.setFillColor(sf::Color::Cyan);
+	replayBarFill.setPosition(replayBar.getPosition());
 
 	if (g_Config.game.system.debugMode)
 	{
@@ -34,7 +40,7 @@ SinglePlayerScene::SinglePlayerScene()
 	// Create Player 
 	entManager.createEntity<Player>();
 
-	enemySpawnIntervalMs = static_cast<int>(g_Config.game.enemy.spawnInterval * (1000 / 60.0f)); // 
+	enemySpawnIntervalMs = static_cast<int>(g_Config.game.enemy.spawnInterval * (1000 / 60.0f));
 
 	// Score Setup
 	scoreText.setFont(font);
@@ -109,12 +115,15 @@ void SinglePlayerScene::update(float deltaTime)
 		rewindSystem.pauseCapture();
 	}
 
-	// Rewind
-	if (inputHandler.isKeyJustPressed('R') && !m_isPaused)
+	// Rewind only when R is pressed 
+	if (!m_isPaused)
 	{
-		std::cerr << "Rewind triggered" << std::endl;
-		rewindSystem.triggerRewind();
+		rewindSystem.triggerRewind(inputHandler.isKeyPressed('R'));
 	}
+
+	// Rewind Bar
+	replayBarFill.setSize({ 200.f * rewindSystem.bufferState(), 20.f});
+
 
 	// Enemy Spawn Logic
 	if (enemySpawnClock.getElapsedTime().asMilliseconds() >= enemySpawnIntervalMs && !m_isPaused && !rewindSystem.isRewinding())
@@ -315,6 +324,8 @@ void SinglePlayerScene::render(sf::RenderWindow& window)
 	window.draw(scoreText);
 	window.draw(BackButton);
 	window.draw(BackButtonText);
+	window.draw(replayBar);
+	window.draw(replayBarFill);
 	entManager.draw(window);
 	if (g_Config.game.system.debugMode)
 	{
