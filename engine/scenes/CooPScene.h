@@ -41,6 +41,9 @@ private:
 	sf::Text BackButtonText;
 	sf::RectangleShape BackButton;
 
+	sf::Text RestartText;
+	sf::Text ReadyText;
+
 	bool isPaused = false;
 	// Enemy setup
 	int enemySpawnIntervalMs;
@@ -49,15 +52,28 @@ private:
 	const float safeDistanceFromPlayer = 150.f;
 	sf::Clock enemySpawnClock;
 
+	bool isGameOver = false;
+	bool isPlayerDead = false;
+	bool isRemotePlayerDead = false;
+	bool isPlayerReadyToReplay = false;
+	bool isRemotePlayerReadyToPlay = false;
 
 	// Score
 	int score;
 	int highScore;
 	int respawnPenalty;
 
+	const int HOST_ID = 1;
+	const int CLIENT_ID = 1000000;
+
 	void handleNetworking();
 	void sendMyPosition();
+	void restartGame();
 	void spawnEnemies(NetworkManager& net);
+
+	float centerX = g_Config.game.window.width / 2.0f;
+	float centerY = g_Config.game.window.height / 2.0f;
+	float spacing = 100.0f;
 
 public:
 	CoopScene();

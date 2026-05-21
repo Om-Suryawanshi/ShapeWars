@@ -21,13 +21,24 @@ CoopScene::CoopScene()
 	BackButtonText.setCharacterSize(28);
 	BackButtonText.setPosition(15, BackButton.getSize().y);
 
+	RestartText.setFont(font);
+	RestartText.setString("Game Over! Press Space to restart.");
+	auto Restartbounds = RestartText.getLocalBounds();
+	RestartText.setOrigin(Restartbounds.width / 2.f, Restartbounds.height / 2.f);
+	RestartText.setPosition(g_Config.game.window.width / 2 - spacing, g_Config.game.window.height / 2 - spacing);
+	RestartText.setCharacterSize(42);
+
+	ReadyText.setFont(font);
+	ReadyText.setString("Ready to replay, Waiting for the other player...");
+	auto Readybounds = ReadyText.getLocalBounds();
+	ReadyText.setOrigin(Readybounds.width / 2.f, Readybounds.height / 2.f);
+	ReadyText.setPosition(g_Config.game.window.width / 2 - spacing, g_Config.game.window.height / 2 - spacing);
+	ReadyText.setCharacterSize(42);
+
 	if (g_Config.game.system.debugMode)
 	{
 		g_ImguiStyle = ImGui::GetStyle();
 	}
-
-	const int HOST_ID = 1; 
-	const int CLIENT_ID = 1000000;
 
 	if (net.isHost) 
 	{
@@ -38,8 +49,8 @@ CoopScene::CoopScene()
 		localPlayer = entManager.createEntityWithId<Player>(HOST_ID);
 		remotePlayer = entManager.createEntityWithId<Player>(CLIENT_ID, true);
 
-		localPlayer->setPos({ 200.f, 300.f });
-		remotePlayer->setPos({ 400.f, 300.f });
+		localPlayer->setPos({ centerX - spacing / 2, centerY });
+		remotePlayer->setPos({ centerX + spacing / 2, centerY });
 	}
 	else 
 	{
@@ -50,8 +61,8 @@ CoopScene::CoopScene()
 		localPlayer = entManager.createEntityWithId<Player>(CLIENT_ID);
 		remotePlayer = entManager.createEntityWithId<Player>(HOST_ID, true);
 
-		localPlayer->setPos({ 400.f, 300.f });
-		remotePlayer->setPos({ 200.f, 300.f });
+		localPlayer->setPos({ centerX + spacing / 2, centerY });
+		remotePlayer->setPos({ centerX - spacing / 2, centerY });
 		remotePlayer->setColor(sf::Color(255, 255, 255, 150));
 		std::cout << "[Coop] Client ready. Waiting for World State...\n";
 	}
@@ -156,6 +167,22 @@ void CoopScene::spawnEnemies(NetworkManager& net)
 
 void CoopScene::update(float deltaTime)
 {
+	if (isGameOver)
+	{
+		std::cout << "Game Over !" << std::endl;
+		if (inputHandler.isKeyJustPressed(' '))
+		{
+			isPlayerReadyToReplay = !isPlayerReadyToReplay;
+			ReadyToPlayPacket pkt;
+			net.sendReliable(&pkt, sizeof(pkt));
+		}
+
+		if (isPlayerReadyToReplay && isRemotePlayerReadyToPlay)
+		{
+			restartGame();
+		}
+	}
+
 	if (inputHandler.isKeyPressed('Esc'))
 	{
 		ExitPacket pkt;
@@ -172,7 +199,6 @@ void CoopScene::update(float deltaTime)
 		isPaused = !isPaused;
 		entManager.pauseEnt();
 	}
-
 
 	// Rewind
 	if (inputHandler.isKeyPressed('R') && !rewindSystem.isRewinding() && !isPaused)
@@ -226,36 +252,40 @@ void CoopScene::update(float deltaTime)
 	net.updateStats(); // Updates ping pkt loss
 	handleNetworking(); // Checks incomming pkts
 
-	if (isPaused) return;
+	if (isPaused || isGameOver) 
+		return;
+
+	if (isPlayerDead && isRemotePlayerDead)
+		isGameOver = true;
 
 	spawnEnemies(net);
-	
+
 	// Collision code between player handle only localplayer the remote player will handle himself
 	for (auto& enemy : entManager.getByType(EntityType::Enemy))
 	{
 		if (!enemy->getisAlive()) continue;
 		if (collision.checkCollision(*localPlayer, *enemy))
 		{
-			RewindPacket pkt;
-			pkt.header.type = REWIND_CLEAR;
-			pkt.isRewinding = false;
-			net.sendPacket(&pkt, sizeof(pkt)); // Send Packet to clear history of rewind
-
-
 			KillEntityPacket Playerkillpkt;
 			Playerkillpkt.type = (int)EntityType::Player;
 			net.sendReliable(&Playerkillpkt, sizeof(Playerkillpkt)); // Send packet to kill the localPlayer on remoteClient
 			localPlayer->die();
-
+			isPlayerDead = true;
 
 			KillEntityPacket enemyKillPacket;
 			enemyKillPacket.type = (int)EntityType::Enemy;
 			enemyKillPacket.id = enemy->getId();
 			net.sendReliable(&enemyKillPacket, sizeof(enemyKillPacket)); // send the packet to which we colided and with
 			enemy->die();
+
+			RewindPacket pkt;
+			pkt.header.type = REWIND_CLEAR;
+			pkt.isRewinding = false;
+			net.sendPacket(&pkt, sizeof(pkt)); // Send Packet to clear history of rewind
 			rewindSystem.clearHistory();
-			localPlayer = entManager.createEntity<Player>();
-			localPlayer->setPos({ 200.f, 300.f });
+
+			//localPlayer = entManager.createEntity<Player>();
+			//localPlayer->setPos({ 200.f, 300.f });
 			score -= enemy->getVertices() * 1000;
 
 			// Send Score Packet
@@ -370,14 +400,16 @@ void CoopScene::update(float deltaTime)
 
 	scoreText.setString("Score: " + std::to_string(score));
 
-	// SEND MY POSITION (e.g. 60 times a sec or less)
-	if (networkTick.getElapsedTime().asMilliseconds() > 15) {
+	// SEND MY POSITION
+	if (networkTick.getElapsedTime().asMilliseconds() > 15) 
+	{
 		sendMyPosition();
 		networkTick.restart();
 	}
 
 	// HOST: SEND CORRECTIONS 
-	if (!rewindSystem.isRewinding() && net.isHost && worldSyncTick.getElapsedTime().asMilliseconds() > 100) {
+	if (!rewindSystem.isRewinding() && net.isHost && worldSyncTick.getElapsedTime().asMilliseconds() > 100) 
+	{
 		WorldStatePacket pkt;
 		pkt.enemyCount = 0;
 		auto enemies = entManager.getByType(EntityType::Enemy);
@@ -479,20 +511,10 @@ void CoopScene::update(float deltaTime)
 
 		ImGui::End();
 	}
+
 	SceneManager::getInstance().getRenderWindow()->clear();
 }
 
-void CoopScene::render(sf::RenderWindow& window)
-{
-	entManager.draw(window);
-	window.draw(scoreText);
-	window.draw(BackButton);
-	window.draw(BackButtonText);
-	if (g_Config.game.system.debugMode)
-	{
-		ImGui::SFML::Render(*SceneManager::getInstance().getRenderWindow());
-	}
-}
 
 void CoopScene::sendMyPosition()
 {
@@ -607,19 +629,12 @@ void CoopScene::handleNetworking()
 
 			if (pkt->type == (int)EntityType::Player)
 			{
-				int oldID = -1;
 				if (remotePlayer)
 				{
-					oldID = remotePlayer->getId();
 					remotePlayer->die(); // If a kill pkt has come that means that the remote player has collided and has died.
+					isRemotePlayerDead = true;
 				}
 				rewindSystem.clearHistory();
-
-				if (oldID != -1)
-				{
-					remotePlayer = entManager.createEntityWithId<Player>(oldID, true); // Spawn new remote player
-					remotePlayer->setPos({ 200.f, 300.f }); // No checking of enemy for now no cooldown either
-				}
 			}
 			else // Else handle everything else (Enemy, MiniEnemy, Bullet)
 			{
@@ -667,6 +682,11 @@ void CoopScene::handleNetworking()
 			}
 		}
 
+		if (h->type == RESTART)
+		{
+			isRemotePlayerReadyToPlay = !isRemotePlayerReadyToPlay;
+		}
+
 		if (h->type == EXIT)
 		{
 			rewindSystem.pauseCapture();
@@ -674,5 +694,55 @@ void CoopScene::handleNetworking()
 			NetworkManager::getInstance().cleanup();
 			SceneManager::getInstance().loadScene(SceneID::MainMenu);
 		}
+	}
+}
+
+void CoopScene::render(sf::RenderWindow& window)
+{
+	if (isGameOver)
+	{
+		if (isPlayerReadyToReplay)
+			window.draw(ReadyText);
+		else
+			window.draw(RestartText);
+	}
+	entManager.draw(window);
+	window.draw(scoreText);
+	window.draw(BackButton);
+	window.draw(BackButtonText);
+	if (g_Config.game.system.debugMode)
+	{
+		ImGui::SFML::Render(*SceneManager::getInstance().getRenderWindow());
+	}
+}
+
+void CoopScene::restartGame()
+{
+	if (isGameOver)
+	{
+		entManager.clearAll();
+		rewindSystem.clearHistory();
+		score = 0;
+
+		if (net.isHost)
+		{
+			localPlayer = entManager.createEntityWithId<Player>(HOST_ID);
+			remotePlayer = entManager.createEntityWithId<Player>(CLIENT_ID, true);
+			localPlayer->setPos({ centerX - spacing / 2, centerY });
+			remotePlayer->setPos({ centerX + spacing / 2, centerY });
+		}
+		else
+		{
+			localPlayer = entManager.createEntityWithId<Player>(CLIENT_ID);
+			remotePlayer = entManager.createEntityWithId<Player>(HOST_ID, true);
+			localPlayer->setPos({ centerX + spacing / 2, centerY });
+			remotePlayer->setPos({ centerX - spacing / 2, centerY });
+		}
+
+		isPlayerDead = false;
+		isRemotePlayerDead = false;
+		isGameOver = false;
+		isPlayerReadyToReplay = false;
+		isRemotePlayerReadyToPlay = false;
 	}
 }

@@ -30,7 +30,8 @@ enum PacketType
     PING = 12,
     PONG = 13,
     ACK = 14,
-    EXIT = 15
+    EXIT = 15,
+    RESTART = 16
 };
 
 enum PacketFlags
@@ -150,6 +151,10 @@ struct ExitPacket
     PacketHeader header = { EXIT };
 };
 
+struct ReadyToPlayPacket
+{
+    PacketHeader header = { RESTART };
+};
 #pragma pack(pop)
 
 
